@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>MaintControl - Controle de Manutenção</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="stylesheet" href="style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <h1><i class="fa-solid fa-gears" style="color:var(--primary)"></i> MaintControl</h1>
+      <div class="controls">
+        <button id="toggleTheme" class="btn secondary" title="Alterar Tema"><i class="fa-solid fa-moon"></i></button>
+        <button id="exportJson" class="btn" title="Exportar Dados"><i class="fa-solid fa-file-export"></i> Exportar JSON</button>
+        <input id="importFile" type="file" accept="application/json" style="display:none" />
+        <button id="importBtn" class="btn secondary" title="Importar Dados"><i class="fa-solid fa-file-import"></i> Importar JSON</button>
+      </div>
+    </header>
+
+    <div class="grid-2">
+      <div>
+        <div class="panel">
+          <div style="display:flex;gap:10px;align-items:center;justify-content:space-between; flex-wrap: wrap;">
+            <div style="display:flex;gap:8px;flex:1; min-width: 280px;">
+              <input id="search" placeholder="Buscar por ID, nome ou fabricante..." />
+              <select id="filterStatus">
+                <option value="all">Todos os Status</option>
+              </select>
+            </div>
+            <div class="small">Total de máquinas: <b id="totalCount" style="font-size: 15px;">0</b></div>
+          </div>
+
+          <div class="table-wrap">
+            <table id="machinesTable">
+              <thead>
+                <tr>
+                  <th data-sort="id">ID <i class="fa-solid fa-sort"></i></th>
+                  <th data-sort="name">Nome <i class="fa-solid fa-sort"></i></th>
+                  <th data-sort="capacity">Capacidade <i class="fa-solid fa-sort"></i></th>
+                  <th data-sort="manufacturer">Fabricante <i class="fa-solid fa-sort"></i></th>
+                  <th data-sort="quantity">Qtd <i class="fa-solid fa-sort"></i></th>
+                  <th>Status</th>
+                  <th>Ações</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-top:12px; flex-wrap: wrap; gap: 10px;">
+            <div class="pager" id="pager"></div>
+            <div class="small">Mostrando <b id="showingRange">0 de 0</b></div>
+          </div>
+        </div>
+
+        <div style="height:24px"></div>
+
+        <div class="panel">
+          <h3 style="margin-top:0">Visão Geral de Status</h3>
+          <div style="position: relative; height:400px;">
+            <canvas id="statusChart"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <aside>
+        <div class="panel">
+          <h3 style="margin-top:0">Adicionar Nova Máquina</h3>
+          <form id="machineForm" class="add-form">
+            <div>
+              <label for="idItem">ID da Máquina</label>
+              <input id="idItem" required />
+            </div>
+            <div>
+              <label for="nomeMaquina">Nome da Máquina</label>
+              <input id="nomeMaquina" required />
+            </div>
+            <div>
+              <label for="capacidade">Capacidade</label>
+              <input id="capacidade" placeholder="Ex: 1000 kg/h" />
+            </div>
+            <div>
+              <label for="fabricante">Fabricante</label>
+              <input id="fabricante" />
+            </div>
+            <div>
+              <label for="quantidade">Quantidade</label>
+              <input id="quantidade" type="number" min="1" value="1" />
+            </div>
+            <div style="grid-column:1/-1;display:flex;gap:8px">
+              <button class="btn" type="submit"><i class="fa-solid fa-plus"></i> Adicionar Máquina</button>
+              <button id="resetForm" type="button" class="btn secondary"><i class="fa-solid fa-eraser"></i> Limpar</button>
+            </div>
+          </form>
+        </div>
+
+        <div style="height:24px"></div>
+
+        <div class="panel">
+          <h3 style="margin-top:0">Métricas Rápidas</h3>
+          <div class="metrics">
+            <div class="metric"><div class="small">Total</div><div id="metricTotal" style="font-weight:800;font-size:20px">0</div></div>
+            <div class="metric"><div class="small">Em Operação</div><div id="metricOp" style="font-weight:800;font-size:20px">0</div></div>
+            <div class="metric"><div class="small">Em Manutenção</div><div id="metricMaint" style="font-weight:800;font-size:20px">0</div></div>
+            <div class="metric"><div class="small">Inoperantes</div><div id="metricInop" style="font-weight:800;font-size:20px">0</div></div>
+          </div>
+        </div>
+      </aside>
+    </div>
+
+    <div id="modalBackdrop" class="modal-backdrop">
+      <div class="modal">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <h3 id="modalTitle" style="margin:0">Detalhes</h3>
+          <div style="display:flex;gap:8px">
+            <button id="modalDelete" class="btn secondary"><i class="fa-solid fa-trash"></i> Excluir</button>
+            <button id="modalClose" class="btn secondary"><i class="fa-solid fa-xmark"></i></button>
+          </div>
+        </div>
+
+        <div class="tabs" style="margin-top:12px">
+          <button class="tab active" data-tab="view"><i class="fa-solid fa-circle-info"></i> Visualizar</button>
+          <button class="tab" data-tab="maintenance"><i class="fa-solid fa-screwdriver-wrench"></i> Manutenção</button>
+          <button class="tab" data-tab="history"><i class="fa-solid fa-clock-rotate-left"></i> Histórico</button>
+        </div>
+
+        <div id="tabView">
+          <p><strong>ID:</strong> <span id="mId"></span></p>
+          <p><strong>Nome:</strong> <span id="mName"></span></p>
+          <p><strong>Capacidade:</strong> <span id="mCap"></span></p>
+          <p><strong>Fabricante:</strong> <span id="mFab"></span></p>
+          <p><strong>Quantidade:</strong> <span id="mQtd"></span></p>
+          <p><strong>Status:</strong> <span id="mStatus" class="pill"></span></p>
+        </div>
+
+        <div id="tabMaintenance" style="display:none"></div>
+
+        <div id="tabHistory" style="display:none">
+          <ul id="historyList" style="list-style-type: none; padding: 0; max-height: 300px; overflow-y: auto;"></ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="toasts" id="toasts"></div>
+  </div>
+
+  <script src="script.js"></script>
+</html>
