@@ -16,7 +16,13 @@ document.addEventListener('DOMContentLoaded', () => {
     // ======== FUNÇÕES DE DADOS (CARREGAR/SALVAR) ========
     const loadState = () => {
         try {
-            state.machines = JSON.parse(localStorage.getItem('machines') || '[]');
+            state.machines = JSON.parse(localStorage.getItem('machines') || '[]').map(m => {
+                // Garantir que as novas propriedades existam no objeto ao carregar
+                m.maintenance = m.maintenance || [];
+                m.history = m.history || [];
+                m.nextMaint = m.nextMaint || null;
+                return m;
+            });
         } catch (e) {
             console.error("Falha ao carregar dados do localStorage", e);
             state.machines = [];
@@ -44,6 +50,8 @@ document.addEventListener('DOMContentLoaded', () => {
         metricOp: document.getElementById('metricOp'),
         metricMaint: document.getElementById('metricMaint'),
         metricInop: document.getElementById('metricInop'),
+        metricNextMaint: document.getElementById('metricNextMaint'), // Nova Métrica
+        metricQtyTotal: document.getElementById('metricQtyTotal'),   // Nova Métrica
         pager: document.getElementById('pager'),
         showingRange: document.getElementById('showingRange'),
         backdrop: document.getElementById('modalBackdrop'),
@@ -56,6 +64,7 @@ document.addEventListener('DOMContentLoaded', () => {
         mStatus: document.getElementById('mStatus'),
         historyList: document.getElementById('historyList'),
         tabMaintenance: document.getElementById('tabMaintenance'),
+        tabSchedule: document.getElementById('tabSchedule'), // Nova Aba
         machineForm: document.getElementById('machineForm')
     };
 
@@ -74,7 +83,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const processedItems = getProcessedItems();
         const total = processedItems.length;
         const pages = Math.max(1, Math.ceil(total / state.perPage));
-        if (state.page > pages) state.page = pages;
+        if (state.page > pages && pages > 0) state.page = pages;
         const start = (state.page - 1) * state.perPage;
         const pagedItems = processedItems.slice(start, start + state.perPage);
 
@@ -112,12 +121,17 @@ document.addEventListener('DOMContentLoaded', () => {
             const indexInState = state.machines.findIndex(x => x.id === m.id);
             const tr = document.createElement('tr');
             tr.className = 'row';
+            // Novo: Botões de + e - para a Quantidade
             tr.innerHTML = `
                 <td>${escapeHtml(m.id)}</td>
                 <td contenteditable="true" data-field="name" data-idx="${indexInState}" class="editable">${escapeHtml(m.name)}</td>
                 <td contenteditable="true" data-field="capacity" data-idx="${indexInState}" class="editable">${escapeHtml(m.capacity || '')}</td>
                 <td contenteditable="true" data-field="manufacturer" data-idx="${indexInState}" class="editable">${escapeHtml(m.manufacturer || '')}</td>
-                <td><input data-idx="${indexInState}" data-field="quantity" type="number" min="1" value="${m.quantity}" style="width:70px;padding: 6px;"/></td>
+                <td style="display:flex;gap:4px;align-items:center;">
+                    <button class="btn secondary btn-qty-dec" data-idx="${indexInState}" title="Diminuir Qtd" style="padding: 6px; font-size:12px;"><i class="fa-solid fa-minus"></i></button>
+                    <input data-idx="${indexInState}" data-field="quantity" type="number" min="1" value="${m.quantity}" style="width:50px;padding: 6px;text-align:center;"/>
+                    <button class="btn secondary btn-qty-inc" data-idx="${indexInState}" title="Aumentar Qtd" style="padding: 6px; font-size:12px;"><i class="fa-solid fa-plus"></i></button>
+                </td>
                 <td><select data-idx="${indexInState}" class="statusSel">${STATUS.map(s => `<option value="${s}" ${m.status === s ? 'selected' : ''}>${s}</option>`).join('')}</select></td>
                 <td class="actions">
                     <button class="btn secondary btn-view" data-idx="${indexInState}" title="Ver Detalhes"><i class="fa-solid fa-eye"></i></button>
@@ -131,15 +145,27 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const updateMetrics = () => {
         const total = state.machines.length;
+        const qtyTotal = state.machines.reduce((acc, m) => acc + (m.quantity || 0), 0);
+        const next30Days = new Date();
+        next30Days.setDate(next30Days.getDate() + 30);
+        const upcomingMaint = state.machines.filter(m => {
+            if (!m.nextMaint || !m.nextMaint.date) return false;
+            const maintDate = new Date(m.nextMaint.date + 'T00:00:00'); // Adiciona T00:00:00 para evitar problemas de fuso horário
+            return maintDate >= new Date() && maintDate <= next30Days;
+        }).length;
+
         DOMElements.totalCount.textContent = total;
         DOMElements.metricTotal.textContent = total;
         DOMElements.metricOp.textContent = state.machines.filter(m => m.status === 'EM OPERAÇÃO').length;
         DOMElements.metricMaint.textContent = state.machines.filter(m => m.status === 'EM MANUTENÇÃO').length;
         DOMElements.metricInop.textContent = state.machines.filter(m => m.status === 'INOPERANTE').length;
+        DOMElements.metricQtyTotal.textContent = qtyTotal; // Nova Métrica
+        DOMElements.metricNextMaint.textContent = upcomingMaint; // Nova Métrica
     };
 
     const renderPager = (pages) => {
         DOMElements.pager.innerHTML = '';
+        if (pages <= 1) return;
         for (let p = 1; p <= pages; p++) {
             const btn = document.createElement('button');
             btn.className = `page-btn ${p === state.page ? 'active' : ''}`;
@@ -172,6 +198,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         renderMaintenanceTab();
         renderHistoryTab();
+        renderScheduleTab(); // Renderiza a nova aba
 
         DOMElements.backdrop.classList.add('show');
         document.querySelector('.tab[data-tab="view"]').click();
@@ -182,20 +209,38 @@ document.addEventListener('DOMContentLoaded', () => {
         state.editingIndex = null;
     };
 
+    // Renderiza a aba de Manutenção (com histórico de etapas)
     const renderMaintenanceTab = () => {
         const machine = state.machines[state.editingIndex];
         const activeMaint = (machine.maintenance || []).find(m => !m.end_date);
         let content = '';
 
         if (activeMaint) {
+            // Se houver manutenção ativa, exibe detalhes e formulário para novas etapas
             content = `
-                <div style="background:var(--bg);padding:15px;border-radius:8px;">
-                    <p style="margin:0;font-weight:600;">Manutenção Ativa (Iniciada em: ${formatDate(activeMaint.start_date)})</p>
-                    <p><strong>Tipo:</strong> ${activeMaint.type}</p>
-                    <p><strong>Descrição:</strong> ${escapeHtml(activeMaint.desc)}</p>
+                <div style="background:var(--bg);padding:15px;border-radius:8px;margin-bottom:15px;">
+                    <p style="margin:0;font-weight:600;">Manutenção Ativa (${activeMaint.type})</p>
+                    <p class="small" style="margin:5px 0;">Início: ${formatDate(activeMaint.start_date)} | Descrição Inicial: ${escapeHtml(activeMaint.desc)}</p>
                     <button id="endMaint" class="btn"><i class="fa-solid fa-check"></i> Finalizar Manutenção</button>
-                </div>`;
+                </div>
+                
+                <h4>Etapas da Manutenção (${(activeMaint.steps || []).length})</h4>
+                <ul id="maintStepsList" style="list-style-type: none; padding: 0; max-height: 150px; overflow-y: auto;">
+                    ${(activeMaint.steps || []).map(s => 
+                        `<li><span class="small">${s.date}</span>: ${escapeHtml(s.description)}</li>`
+                    ).join('') || '<li>Nenhuma etapa registrada ainda.</li>'}
+                </ul>
+
+                <form id="maintFormStep" style="margin-top:15px;">
+                    <label>Adicionar Etapa/Ação</label>
+                    <textarea id="stepDesc" rows="2" placeholder="Ex: Troca da Correia A30..." required></textarea>
+                    <div style="display:flex;gap:8px;margin-top:12px">
+                        <button class="btn secondary" type="submit"><i class="fa-solid fa-plus"></i> Registrar Etapa</button>
+                    </div>
+                </form>
+                `;
         } else {
+            // Se não houver, exibe o formulário para iniciar uma nova
             content = `
                 <form id="maintFormNew">
                     <h4>Iniciar Nova Manutenção</h4>
@@ -212,6 +257,56 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         DOMElements.tabMaintenance.innerHTML = content;
         addMaintenanceEventListeners();
+    };
+
+    // Renderiza a aba de Agendamento
+    const renderScheduleTab = () => {
+        const machine = state.machines[state.editingIndex];
+        const display = document.getElementById('nextMaintDisplay');
+        const dateInput = document.getElementById('nextMaintDate');
+        const descTextarea = document.getElementById('nextMaintDesc');
+        const scheduleForm = document.getElementById('scheduleForm');
+        const clearBtn = document.getElementById('clearSchedule');
+
+        if (machine.nextMaint && machine.nextMaint.date) {
+            // Exibe a data no formato DD/MM/YYYY
+            display.innerHTML = `**${formatDate(machine.nextMaint.date)}** (${escapeHtml(machine.nextMaint.desc)})`;
+            // Define o valor do input (que deve ser YYYY-MM-DD)
+            dateInput.value = machine.nextMaint.date;
+            descTextarea.value = machine.nextMaint.desc;
+        } else {
+            display.textContent = 'N/A';
+            dateInput.value = '';
+            descTextarea.value = '';
+        }
+        
+        scheduleForm.onsubmit = (e) => {
+            e.preventDefault();
+            const date = dateInput.value;
+            const desc = descTextarea.value.trim();
+
+            if (!date) {
+                notify('A data de agendamento é obrigatória.', 'error');
+                return;
+            }
+
+            machine.nextMaint = { date, desc };
+            addHistory(state.editingIndex, `Próxima manutenção agendada para: ${formatDate(date)}`);
+            saveState();
+            notify('Agendamento salvo!', 'success');
+            renderScheduleTab();
+            render();
+        };
+
+        clearBtn.onclick = () => {
+            if (!machine.nextMaint) return;
+            machine.nextMaint = null;
+            addHistory(state.editingIndex, `Agendamento de próxima manutenção cancelado.`);
+            saveState();
+            notify('Agendamento limpo.', 'info');
+            renderScheduleTab();
+            render();
+        };
     };
 
     const renderHistoryTab = () => {
@@ -235,6 +330,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (chart) {
             chart.data.labels = labels;
             chart.data.datasets[0].data = data;
+            // A cor do texto da legenda pode mudar com o tema, atualizamos aqui
+            chart.options.plugins.legend.labels.color = getComputedStyle(document.body).getPropertyValue('--text');
             chart.update();
             return;
         }
@@ -273,7 +370,8 @@ document.addEventListener('DOMContentLoaded', () => {
             manufacturer: document.getElementById('fabricante').value.trim(),
             quantity: Number(document.getElementById('quantidade').value) || 1,
             status: 'OK',
-            maintenance: [], history: [{ date: new Date().toLocaleString('pt-BR'), text: 'Máquina registrada no sistema.' }]
+            maintenance: [], history: [{ date: new Date().toLocaleString('pt-BR'), text: 'Máquina registrada no sistema.' }],
+            nextMaint: null
         };
         state.machines.unshift(newMachine);
         saveState();
@@ -291,8 +389,24 @@ document.addEventListener('DOMContentLoaded', () => {
         render();
     };
 
+    // Função de atualização de quantidade (agora chamada pelos botões)
+    const updateQuantity = (index, change) => {
+        const machine = state.machines[index];
+        const oldQty = machine.quantity;
+        const newQty = Math.max(1, oldQty + change);
+
+        if (oldQty !== newQty) {
+            machine.quantity = newQty;
+            addHistory(index, `Quantidade alterada de ${oldQty} para ${newQty}.`);
+            saveState();
+            notify('Quantidade atualizada', 'success');
+            render();
+        }
+    };
+
     // ======== EVENT LISTENERS ========
     const addEventListeners = () => {
+        // ... (Seus event listeners existentes)
         DOMElements.machineForm.addEventListener('submit', e => { e.preventDefault(); addMachine(); });
         document.getElementById('resetForm').addEventListener('click', () => {
             DOMElements.machineForm.reset();
@@ -326,11 +440,13 @@ document.addEventListener('DOMContentLoaded', () => {
             document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
             e.currentTarget.classList.add('active');
             const tabName = e.currentTarget.dataset.tab;
-            ['view', 'maintenance', 'history'].forEach(id => {
+            ['view', 'maintenance', 'history', 'schedule'].forEach(id => {
                 document.getElementById(`tab${id.charAt(0).toUpperCase() + id.slice(1)}`).style.display = (tabName === id) ? 'block' : 'none';
             });
-             if (tabName === 'maintenance') renderMaintenanceTab();
-             if (tabName === 'history') renderHistoryTab();
+            // Recarrega o conteúdo das abas dinâmicas
+            if (tabName === 'maintenance') renderMaintenanceTab();
+            if (tabName === 'history') renderHistoryTab();
+            if (tabName === 'schedule') renderScheduleTab();
         }));
 
         setupExtraFeatures();
@@ -341,16 +457,10 @@ document.addEventListener('DOMContentLoaded', () => {
         document.querySelectorAll('.btn-delete').forEach(b => b.addEventListener('click', e => {
             if (confirm('Tem certeza que deseja excluir esta máquina?')) deleteMachine(+e.currentTarget.dataset.idx);
         }));
-
-        document.querySelectorAll('.statusSel').forEach(s => s.addEventListener('change', e => {
-            const index = +e.currentTarget.dataset.idx;
-            const oldStatus = state.machines[index].status;
-            const newStatus = e.currentTarget.value;
-            state.machines[index].status = newStatus;
-            addHistory(index, `Status alterado de "${oldStatus}" para "${newStatus}".`);
-            saveState();
-            render();
-        }));
+        
+        // Novo: Eventos para botões de Quantidade
+        document.querySelectorAll('.btn-qty-inc').forEach(b => b.addEventListener('click', e => updateQuantity(+e.currentTarget.dataset.idx, 1)));
+        document.querySelectorAll('.btn-qty-dec').forEach(b => b.addEventListener('click', e => updateQuantity(+e.currentTarget.dataset.idx, -1)));
 
         document.querySelectorAll('input[data-field="quantity"]').forEach(inp => inp.addEventListener('change', e => {
             const index = +e.currentTarget.dataset.idx;
@@ -363,6 +473,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 notify('Quantidade atualizada', 'success');
             }
             e.currentTarget.value = newQty;
+            render(); // Renderiza para atualizar as métricas
+        }));
+
+        document.querySelectorAll('.statusSel').forEach(s => s.addEventListener('change', e => {
+            const index = +e.currentTarget.dataset.idx;
+            const oldStatus = state.machines[index].status;
+            const newStatus = e.currentTarget.value;
+            state.machines[index].status = newStatus;
+            addHistory(index, `Status alterado de "${oldStatus}" para "${newStatus}".`);
+            saveState();
+            render();
         }));
 
         document.querySelectorAll('.editable').forEach(td => {
@@ -384,6 +505,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const addMaintenanceEventListeners = () => {
+        // Iniciar Manutenção
         document.getElementById('maintFormNew')?.addEventListener('submit', (e) => {
             e.preventDefault();
             const i = state.editingIndex;
@@ -394,16 +516,37 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const machine = state.machines[i];
             machine.maintenance = machine.maintenance || [];
-            machine.maintenance.push({ type, desc, start_date: startDate, end_date: null });
+            machine.maintenance.push({ type, desc, start_date: startDate, end_date: null, steps: [] }); // Adiciona array de 'steps'
 
             addHistory(i, `Manutenção (${type}) INICIADA. Motivo: ${desc}`);
             machine.status = 'EM MANUTENÇÃO';
             saveState();
             notify('Manutenção registrada com sucesso!', 'success');
             render();
-            closeModal();
+            openModal(i); // Reabre o modal para mostrar a nova aba de etapas
         });
 
+        // Registrar Etapa (Novo)
+        document.getElementById('maintFormStep')?.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const i = state.editingIndex;
+            const stepDesc = document.getElementById('stepDesc').value.trim();
+            if (!stepDesc) { notify('A descrição da etapa é obrigatória.', 'error'); return; }
+            
+            const machine = state.machines[i];
+            const activeMaint = (machine.maintenance || []).find(x => !x.end_date);
+            if (!activeMaint) return;
+
+            activeMaint.steps.push({ date: new Date().toLocaleString('pt-BR'), description: stepDesc });
+
+            addHistory(i, `Etapa de Manutenção registrada: ${stepDesc}`);
+            saveState();
+            notify('Etapa registrada!', 'info');
+            document.getElementById('stepDesc').value = '';
+            renderMaintenanceTab(); // Atualiza a aba
+        });
+
+        // Finalizar Manutenção
         document.getElementById('endMaint')?.addEventListener('click', () => {
             const i = state.editingIndex;
             const machine = state.machines[i];
@@ -413,7 +556,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const endDate = prompt("Informe a data de finalização (AAAA-MM-DD):", new Date().toISOString().slice(0, 10));
             if (endDate) {
                 activeMaint.end_date = endDate;
-                addHistory(i, `Manutenção (${activeMaint.type}) FINALIZADA.`);
+                addHistory(i, `Manutenção (${activeMaint.type}) FINALIZADA. Teve ${activeMaint.steps ? activeMaint.steps.length : 0} etapas.`);
                 machine.status = 'OK';
                 saveState();
                 notify('Manutenção finalizada! Status da máquina alterado para "OK".', 'success');
@@ -462,7 +605,13 @@ document.addEventListener('DOMContentLoaded', () => {
                     const importedMachines = JSON.parse(ev.target.result);
                     if (!Array.isArray(importedMachines)) throw new Error("O arquivo não contém um array JSON.");
                     if (confirm(`Isso irá substituir TODOS os dados atuais. Deseja continuar e importar ${importedMachines.length} máquinas?`)) {
-                        state.machines = importedMachines;
+                        state.machines = importedMachines.map(m => {
+                            // Garantir que novas propriedades existam nos dados importados
+                            m.maintenance = m.maintenance || [];
+                            m.history = m.history || [];
+                            m.nextMaint = m.nextMaint || null;
+                            return m;
+                        });
                         saveState();
                         render();
                         notify('Dados importados com sucesso!', 'success');
@@ -493,10 +642,20 @@ document.addEventListener('DOMContentLoaded', () => {
         "INOPERANTE": 'inop', "ESPERANDO PEÇAS": 'wait', "HORAS EXCEDENTES": 'exc'
     }[s] || 'ok');
 
+    // Função que formata datas no formato ISO (YYYY-MM-DD) para DD/MM/YYYY
     const formatDate = (dateString) => {
         if (!dateString) return 'N/A';
-        const [year, month, day] = dateString.split('-');
-        return `${day}/${month}/${year}`;
+        // Suporta formato AAAA-MM-DD (gerado pelo input type="date")
+        if (dateString.match(/^\d{4}-\d{2}-\d{2}$/)) {
+            const [year, month, day] = dateString.split('-');
+            return `${day}/${month}/${year}`;
+        }
+        // Se não for data ISO, tenta formatar como data local (para o histórico)
+        try {
+            return new Date(dateString).toLocaleDateString('pt-BR');
+        } catch (e) {
+            return dateString;
+        }
     };
 
     // ======== INICIALIZAÇÃO ========

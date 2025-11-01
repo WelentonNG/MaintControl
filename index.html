@@ -107,6 +107,8 @@
               <div class="metric"><div class="small">Em Operação</div><div id="metricOp" style="font-weight:800;font-size:20px">0</div></div>
               <div class="metric"><div class="small">Em Manutenção</div><div id="metricMaint" style="font-weight:800;font-size:20px">0</div></div>
               <div class="metric"><div class="small">Inoperantes</div><div id="metricInop" style="font-weight:800;font-size:20px">0</div></div>
+              <div class="metric"><div class="small">Próx. Maint. (30D)</div><div id="metricNextMaint" style="font-weight:800;font-size:20px">0</div></div>
+              <div class="metric"><div class="small">Qtd Total</div><div id="metricQtyTotal" style="font-weight:800;font-size:20px">0</div></div>
             </div>
           </div>
         </aside>
@@ -126,6 +128,7 @@
             <button class="tab active" data-tab="view"><i class="fa-solid fa-circle-info"></i> Visualizar</button>
             <button class="tab" data-tab="maintenance"><i class="fa-solid fa-screwdriver-wrench"></i> Manutenção</button>
             <button class="tab" data-tab="history"><i class="fa-solid fa-clock-rotate-left"></i> Histórico</button>
+            <button class="tab" data-tab="schedule"><i class="fa-solid fa-calendar-alt"></i> Agendamento</button>
           </div>
 
           <div id="tabView">
@@ -142,6 +145,28 @@
           <div id="tabHistory" style="display:none">
             <ul id="historyList" style="list-style-type: none; padding: 0; max-height: 300px; overflow-y: auto;"></ul>
           </div>
+          
+          <div id="tabSchedule" style="display:none">
+            <h4 style="margin-top:0">Próxima Manutenção Preventiva</h4>
+            <form id="scheduleForm">
+              <div>
+                <label for="nextMaintDate">Data Agendada</label>
+                <input id="nextMaintDate" type="date" />
+              </div>
+              <div style="margin-top:12px">
+                <label for="nextMaintDesc">Observações</label>
+                <textarea id="nextMaintDesc" rows="2" placeholder="Descreva o serviço agendado..."></textarea>
+              </div>
+              <div style="display:flex;gap:8px;margin-top:12px">
+                <button class="btn" type="submit"><i class="fa-solid fa-save"></i> Salvar Agendamento</button>
+                <button id="clearSchedule" type="button" class="btn secondary"><i class="fa-solid fa-eraser"></i> Limpar</button>
+              </div>
+            </form>
+            <div style="margin-top:20px">
+                <strong>Próxima Agendada:</strong> <span id="nextMaintDisplay">N/A</span>
+            </div>
+          </div>
+
         </div>
       </div>
 

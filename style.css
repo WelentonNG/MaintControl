@@ -1,4 +1,4 @@
-/* ====== VARIÁVEIS ====== */ nada 
+/* ====== VARIÁVEIS ====== */
 :root{
   --bg: #f6f7fb;
   --card: #ffffff;
@@ -176,4 +176,36 @@ tr.row:hover{background:color-mix(in srgb, var(--bg) 50%, transparent)}
   th,td{padding:10px 8px}
   .controls { justify-content: flex-start; }
   h1 { font-size: 20px; }
+}
+
+
+/* ====== ESTILOS PERSONALIZADOS PARA O CALENDÁRIO (Botão Vermelho) ====== */
+
+/* 1. Garante que o campo tenha espaço para o botão personalizado */
+#tabSchedule input[type="date"] {
+    /* Aumenta o padding à direita para evitar que o ícone do calendário sobreponha o texto */
+    padding-right: 40px; 
+}
+
+/* 2. Estilo para o botão/indicador do calendário em input[type="date"] para WebKit (Chrome, Edge, Safari) */
+/* Este pseudo-elemento controla a aparência do botão/ícone do calendário */
+#tabSchedule input[type="date"]::-webkit-calendar-picker-indicator {
+    /* Torna o indicador visível e permite customização */
+    opacity: 1;
+    filter: none;
+    
+    /* Mude a cor de fundo do "botão" do calendário para vermelho (Danger) */
+    background-color: transparent;
+    
+    /* Mude a cor do ícone do calendário para branco para contrastar com o fundo vermelho */
+    color: white; 
+    
+    /* Adiciona padding e borda arredondada para parecer um botão */
+    padding: 4px;
+    border-radius: 4px;
+    cursor: pointer;
+    
+    /* Define o tamanho */
+    width: 25px;
+    height: 25px;
 }
