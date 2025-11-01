@@ -1,0 +1,838 @@
+[
+  {
+    "id": "W001",
+    "name": "DOBRADEIRA HIDRAULICA",
+    "capacity": "1\"X4MT",
+    "manufacturer": null,
+    "quantity": 1,
+    "status": "INOPERANTE",
+    "maintenance": [],
+    "history": [
+      {
+        "date": "01/11/2025 16:48:01",
+        "text": "Máquina registrada no sistema."
+      },
+      {
+        "date": "01/11/2025 16:48:23",
+        "text": "Status alterado de \"OK\" para \"INOPERANTE\"."
+      }
+    ],
+    "nextMaint": null
+  },
+  {
+    "id": "W002",
+    "name": "GUILHOTINA",
+    "capacity": "Fabricante: RIO NEGRO | Capacidade: 8MMX4MT",
+    "manufacturer": null,
+    "quantity": 1,
+    "status": "INOPERANTE",
+    "maintenance": [],
+    "history": [
+      {
+        "date": "01/11/2025 20:58:25",
+        "text": "Carregado do banco de dados."
+      }
+    ],
+    "nextMaint": null
+  },
+  {
+    "id": "W003",
+    "name": "PLASMA POWEMAX 105",
+    "capacity": "Fabricante: HYPERTHERMAM | Capacidade: 25,4",
+    "manufacturer": null,
+    "quantity": 1,
+    "status": "EM OPERAÇÃO",
+    "maintenance": [],
+    "history": [
+      {
+        "date": "01/11/2025 20:58:25",
+        "text": "Carregado do banco de dados."
+      }
+    ],
+    "nextMaint": null
+  },
+  {
+    "id": "W004",
+    "name": "PLASMA POWEMAX 105 SINC",
+    "capacity": "Fabricante: HYPERTHERMAM | Capacidade: 25,4",
+    "manufacturer": null,
+    "quantity": 1,
+    "status": "OK",
+    "maintenance": [],
+    "history": [
+      {
+        "date": "01/11/2025 20:58:25",
+        "text": "Carregado do banco de dados."
+      }
+    ],
+    "nextMaint": null
+  },
+  {
+    "id": "W005",
+    "name": "PLASMA POWEMAX 1650",
+    "capacity": "Fabricante: HYPERTHERMAM | Capacidade: 25,4",
+    "manufacturer": null,
+    "quantity": 1,
+    "status": "HORAS EXCEDENTES",
+    "maintenance": [],
+    "history": [
+      {
+        "date": "01/11/2025 20:58:25",
+        "text": "Carregado do banco de dados."
+      }
+    ],
+    "nextMaint": null
+  },
+  {
+    "id": "W006",
+    "name": "CALNADRA CALFLAN",
+    "capacity": "Fabricante: CALFLAN | Capacidade: 12,7X2.500",
+    "manufacturer": null,
+    "quantity": 1,
+    "status": "HORAS EXCEDENTES",
+    "maintenance": [],
+    "history": [
+      {
+        "date": "01/11/2025 20:58:25",
+        "text": "Carregado do banco de dados."
+      }
+    ],
+    "nextMaint": null
+  },
+  {
+    "id": "W007",
+    "name": "CALNDRA AGA 6X3000",
+    "capacity": "Fabricante: AGA | Capacidade: 5X2.500",
+    "manufacturer": null,
+    "quantity": 1,
+    "status": "EM OPERAÇÃO",
+    "maintenance": [],
+    "history": [
+      {
+        "date": "01/11/2025 20:58:25",
+        "text": "Carregado do banco de dados."
+      }
+    ],
+    "nextMaint": null
+  },
+  {
+    "id": "W008",
+    "name": "CALANDRA AGA 4,5X3000",
+    "capacity": "Fabricante: AGA | Capacidade: 4X2000",
+    "manufacturer": null,
+    "quantity": 1,
+    "status": "EM OPERAÇÃO",
+    "maintenance": [],
+    "history": [
+      {
+        "date": "01/11/2025 20:58:25",
+        "text": "Carregado do banco de dados."
+      }
+    ],
+    "nextMaint": null
+  },
+  {
+    "id": "W009",
+    "name": "PORTICO 1000KG",
+    "capacity": "Capacidade: 1000KG",
+    "manufacturer": null,
+    "quantity": 1,
+    "status": "EM OPERAÇÃO",
+    "maintenance": [],
+    "history": [
+      {
+        "date": "01/11/2025 20:58:25",
+        "text": "Carregado do banco de dados."
+      }
+    ],
+    "nextMaint": null
+  },
+  {
+    "id": "W010",
+    "name": "CALANDRA AGA DE PERFIL",
+    "capacity": "Fabricante: AGA | Capacidade: 6MM",
+    "manufacturer": null,
+    "quantity": 1,
+    "status": "EM OPERAÇÃO",
+    "maintenance": [],
+    "history": [
+      {
+        "date": "01/11/2025 20:58:25",
+        "text": "Carregado do banco de dados."
+      }
+    ],
+    "nextMaint": null
+  },
+  {
+    "id": "W011",
+    "name": "MESA POCIONARA P/PMSSS",
+    "capacity": "Capacidade: 24\"",
+    "manufacturer": null,
+    "quantity": 1,
+    "status": "EM OPERAÇÃO",
+    "maintenance": [],
+    "history": [
+      {
+        "date": "01/11/2025 20:58:25",
+        "text": "Carregado do banco de dados."
+      }
+    ],
+    "nextMaint": null
+  },
+  {
+    "id": "W012",
+    "name": "ROBÓ DE SOLDA MIG",
+    "capacity": "Fabricante: CLOOS | Capacidade: 1500MM",
+    "manufacturer": null,
+    "quantity": 1,
+    "status": "HORAS EXCEDENTES",
+    "maintenance": [],
+    "history": [
+      {
+        "date": "01/11/2025 20:58:25",
+        "text": "Carregado do banco de dados."
+      }
+    ],
+    "nextMaint": null
+  },
+  {
+    "id": "W013",
+    "name": "SERRA FITA",
+    "capacity": "Fabricante: FRANHO | Capacidade: 16\"",
+    "manufacturer": null,
+    "quantity": 1,
+    "status": "OK",
+    "maintenance": [],
+    "history": [
+      {
+        "date": "01/11/2025 20:58:25",
+        "text": "Carregado do banco de dados."
+      }
+    ],
+    "nextMaint": null
+  },
+  {
+    "id": "W014",
+    "name": "TORNO NARDINE",
+    "capacity": "Fabricante: NARDINE | Capacidade: 36\"",
+    "manufacturer": null,
+    "quantity": 1,
+    "status": "HORAS EXCEDENTES",
+    "maintenance": [],
+    "history": [
+      {
+        "date": "01/11/2025 20:58:25",
+        "text": "Carregado do banco de dados."
+      }
+    ],
+    "nextMaint": null
+  },
+  {
+    "id": "W015",
+    "name": "TORNO POREBA",
+    "capacity": "Fabricante: POREBA",
+    "manufacturer": null,
+    "quantity": 1,
+    "status": "HORAS EXCEDENTES",
+    "maintenance": [],
+    "history": [
+      {
+        "date": "01/11/2025 20:58:25",
+        "text": "Carregado do banco de dados."
+      }
+    ],
+    "nextMaint": null
+  },
+  {
+    "id": "W016",
+    "name": "TORNO",
+    "capacity": "Fabricante: XXXX | Capacidade: 12\"",
+    "manufacturer": null,
+    "quantity": 1,
+    "status": "HORAS EXCEDENTES",
+    "maintenance": [],
+    "history": [
+      {
+        "date": "01/11/2025 20:58:25",
+        "text": "Carregado do banco de dados."
+      }
+    ],
+    "nextMaint": null
+  },
+  {
+    "id": "W017",
+    "name": "PRENSA 65X1200",
+    "capacity": "Capacidade: 65 TONELADAS",
+    "manufacturer": null,
+    "quantity": 1,
+    "status": "EM OPERAÇÃO",
+    "maintenance": [],
+    "history": [
+      {
+        "date": "01/11/2025 20:58:25",
+        "text": "Carregado do banco de dados."
+      }
+    ],
+    "nextMaint": null
+  },
+  {
+    "id": "W018",
+    "name": "PRENSA 65X2500",
+    "capacity": "Capacidade: 65 TONELADAS",
+    "manufacturer": null,
+    "quantity": 1,
+    "status": "EM OPERAÇÃO",
+    "maintenance": [],
+    "history": [
+      {
+        "date": "01/11/2025 20:58:25",
+        "text": "Carregado do banco de dados."
+      }
+    ],
+    "nextMaint": null
+  },
+  {
+    "id": "W019",
+    "name": "PRENSA 200X2500",
+    "capacity": "Capacidade: 200 TONELADAS",
+    "manufacturer": null,
+    "quantity": 1,
+    "status": "HORAS EXCEDENTES",
+    "maintenance": [],
+    "history": [
+      {
+        "date": "01/11/2025 20:58:25",
+        "text": "Carregado do banco de dados."
+      }
+    ],
+    "nextMaint": null
+  },
+  {
+    "id": "W020",
+    "name": "PRESNA 200X1500",
+    "capacity": "Capacidade: 200 TONELADAS",
+    "manufacturer": null,
+    "quantity": 1,
+    "status": "EM OPERAÇÃO",
+    "maintenance": [],
+    "history": [
+      {
+        "date": "01/11/2025 20:58:25",
+        "text": "Carregado do banco de dados."
+      }
+    ],
+    "nextMaint": null
+  },
+  {
+    "id": "W021",
+    "name": "MAQ/COR/MASTER 20",
+    "capacity": "Capacidade: 3\"",
+    "manufacturer": null,
+    "quantity": 1,
+    "status": "INOPERANTE",
+    "maintenance": [],
+    "history": [
+      {
+        "date": "01/11/2025 20:58:25",
+        "text": "Carregado do banco de dados."
+      }
+    ],
+    "nextMaint": null
+  },
+  {
+    "id": "W022",
+    "name": "COLLLER REFRIGERAÇAO",
+    "capacity": "Fabricante: MULLER | Capacidade: 10L",
+    "manufacturer": null,
+    "quantity": 1,
+    "status": "EM OPERAÇÃO",
+    "maintenance": [],
+    "history": [
+      {
+        "date": "01/11/2025 20:58:25",
+        "text": "Carregado do banco de dados."
+      }
+    ],
+    "nextMaint": null
+  },
+  {
+    "id": "W023",
+    "name": "COLLLER REFRIGERAÇAO",
+    "capacity": "Fabricante: MULLER | Capacidade: 10L",
+    "manufacturer": null,
+    "quantity": 1,
+    "status": "EM OPERAÇÃO",
+    "maintenance": [],
+    "history": [
+      {
+        "date": "01/11/2025 20:58:25",
+        "text": "Carregado do banco de dados."
+      }
+    ],
+    "nextMaint": null
+  },
+  {
+    "id": "W024",
+    "name": "COLLLER REFRIGERAÇAO",
+    "capacity": "Fabricante: MULLER | Capacidade: 10L",
+    "manufacturer": null,
+    "quantity": 1,
+    "status": "EM OPERAÇÃO",
+    "maintenance": [],
+    "history": [
+      {
+        "date": "01/11/2025 20:58:25",
+        "text": "Carregado do banco de dados."
+      }
+    ],
+    "nextMaint": null
+  },
+  {
+    "id": "W025",
+    "name": "COLLLER REFRIGERAÇAO",
+    "capacity": "Fabricante: MULLER | Capacidade: 10L",
+    "manufacturer": null,
+    "quantity": 1,
+    "status": "INOPERANTE",
+    "maintenance": [],
+    "history": [
+      {
+        "date": "01/11/2025 20:58:25",
+        "text": "Carregado do banco de dados."
+      }
+    ],
+    "nextMaint": null
+  },
+  {
+    "id": "W026",
+    "name": "COLLLER REFRIGERAÇAO",
+    "capacity": "Fabricante: BINZEL | Capacidade: 10L",
+    "manufacturer": null,
+    "quantity": 1,
+    "status": "EM OPERAÇÃO",
+    "maintenance": [],
+    "history": [
+      {
+        "date": "01/11/2025 20:58:25",
+        "text": "Carregado do banco de dados."
+      }
+    ],
+    "nextMaint": null
+  },
+  {
+    "id": "W027",
+    "name": "COLLLER REFRIGERAÇAO",
+    "capacity": "Fabricante: BINZEL | Capacidade: 10L",
+    "manufacturer": null,
+    "quantity": 1,
+    "status": "INOPERANTE",
+    "maintenance": [],
+    "history": [
+      {
+        "date": "01/11/2025 20:58:25",
+        "text": "Carregado do banco de dados."
+      }
+    ],
+    "nextMaint": null
+  },
+  {
+    "id": "W028",
+    "name": "M/S/MASTER 350 MULLER",
+    "capacity": "Fabricante: MULLER | Capacidade: 350A",
+    "manufacturer": null,
+    "quantity": 1,
+    "status": "HORAS EXCEDENTES",
+    "maintenance": [],
+    "history": [
+      {
+        "date": "01/11/2025 20:58:25",
+        "text": "Carregado do banco de dados."
+      }
+    ],
+    "nextMaint": null
+  },
+  {
+    "id": "W029",
+    "name": "M/S/MASTER 350 MULLER",
+    "capacity": "Fabricante: MULLER | Capacidade: 350A",
+    "manufacturer": null,
+    "quantity": 1,
+    "status": "HORAS EXCEDENTES",
+    "maintenance": [],
+    "history": [
+      {
+        "date": "01/11/2025 20:58:25",
+        "text": "Carregado do banco de dados."
+      }
+    ],
+    "nextMaint": null
+  },
+  {
+    "id": "W030",
+    "name": "M/S/MASTER 350 MULLER",
+    "capacity": "Fabricante: MULLER | Capacidade: 350A",
+    "manufacturer": null,
+    "quantity": 1,
+    "status": "HORAS EXCEDENTES",
+    "maintenance": [],
+    "history": [
+      {
+        "date": "01/11/2025 20:58:25",
+        "text": "Carregado do banco de dados."
+      }
+    ],
+    "nextMaint": null
+  },
+  {
+    "id": "W031",
+    "name": "M/S/MASTER 350 MULLER",
+    "capacity": "Fabricante: MULLER | Capacidade: 350A",
+    "manufacturer": null,
+    "quantity": 1,
+    "status": "INOPERANTE",
+    "maintenance": [],
+    "history": [
+      {
+        "date": "01/11/2025 20:58:25",
+        "text": "Carregado do banco de dados."
+      }
+    ],
+    "nextMaint": null
+  },
+  {
+    "id": "W032",
+    "name": "M/S/MASTER 350 MULLER",
+    "capacity": "Fabricante: MULLER | Capacidade: 350A",
+    "manufacturer": null,
+    "quantity": 1,
+    "status": "INOPERANTE",
+    "maintenance": [],
+    "history": [
+      {
+        "date": "01/11/2025 20:58:25",
+        "text": "Carregado do banco de dados."
+      }
+    ],
+    "nextMaint": null
+  },
+  {
+    "id": "W033",
+    "name": "M/S/MASTER 350 MULLER",
+    "capacity": "Fabricante: MULLER | Capacidade: 350A",
+    "manufacturer": null,
+    "quantity": 1,
+    "status": "INOPERANTE",
+    "maintenance": [],
+    "history": [
+      {
+        "date": "01/11/2025 20:58:25",
+        "text": "Carregado do banco de dados."
+      }
+    ],
+    "nextMaint": null
+  },
+  {
+    "id": "W034",
+    "name": "M/S/MASTER 350 MULLER",
+    "capacity": "Fabricante: MULLER | Capacidade: 350A",
+    "manufacturer": null,
+    "quantity": 1,
+    "status": "INOPERANTE",
+    "maintenance": [],
+    "history": [
+      {
+        "date": "01/11/2025 20:58:25",
+        "text": "Carregado do banco de dados."
+      }
+    ],
+    "nextMaint": null
+  },
+  {
+    "id": "W035",
+    "name": "M/S/BINZEL 310",
+    "capacity": "Fabricante: BINZEL | Capacidade: 310A",
+    "manufacturer": null,
+    "quantity": 1,
+    "status": "EM OPERAÇÃO",
+    "maintenance": [],
+    "history": [
+      {
+        "date": "01/11/2025 20:58:25",
+        "text": "Carregado do banco de dados."
+      }
+    ],
+    "nextMaint": null
+  },
+  {
+    "id": "W036",
+    "name": "M/S/BINZEL 310",
+    "capacity": "Fabricante: BINZEL | Capacidade: 310A",
+    "manufacturer": null,
+    "quantity": 1,
+    "status": "EM OPERAÇÃO",
+    "maintenance": [],
+    "history": [
+      {
+        "date": "01/11/2025 20:58:25",
+        "text": "Carregado do banco de dados."
+      }
+    ],
+    "nextMaint": null
+  },
+  {
+    "id": "W037",
+    "name": "M/S/BINZEL 310",
+    "capacity": "Fabricante: BINZEL | Capacidade: 310A",
+    "manufacturer": null,
+    "quantity": 1,
+    "status": "EM OPERAÇÃO",
+    "maintenance": [],
+    "history": [
+      {
+        "date": "01/11/2025 20:58:25",
+        "text": "Carregado do banco de dados."
+      }
+    ],
+    "nextMaint": null
+  },
+  {
+    "id": "W038",
+    "name": "M/S/BINZEL",
+    "capacity": "Fabricante: BINZEL | Capacidade: 210A",
+    "manufacturer": null,
+    "quantity": 1,
+    "status": "EM OPERAÇÃO",
+    "maintenance": [],
+    "history": [
+      {
+        "date": "01/11/2025 20:58:25",
+        "text": "Carregado do banco de dados."
+      }
+    ],
+    "nextMaint": null
+  },
+  {
+    "id": "W039",
+    "name": "M/SOLDA TIG MKR 500",
+    "capacity": "Capacidade: 500A",
+    "manufacturer": null,
+    "quantity": 2,
+    "status": "OK",
+    "maintenance": [],
+    "history": [
+      {
+        "date": "01/11/2025 20:58:25",
+        "text": "Carregado do banco de dados."
+      }
+    ],
+    "nextMaint": null
+  },
+  {
+    "id": "W040",
+    "name": "M/SOLDA TIG MKR 350",
+    "capacity": "Capacidade: 350A",
+    "manufacturer": null,
+    "quantity": 1,
+    "status": "OK",
+    "maintenance": [],
+    "history": [
+      {
+        "date": "01/11/2025 20:58:25",
+        "text": "Carregado do banco de dados."
+      }
+    ],
+    "nextMaint": null
+  },
+  {
+    "id": "W041",
+    "name": "M/SOLDA TIG LINCOIN",
+    "capacity": "Fabricante: LINCOIN | Capacidade: 510A",
+    "manufacturer": null,
+    "quantity": 1,
+    "status": "OK",
+    "maintenance": [],
+    "history": [
+      {
+        "date": "01/11/2025 20:58:25",
+        "text": "Carregado do banco de dados."
+      }
+    ],
+    "nextMaint": null
+  },
+  {
+    "id": "W042",
+    "name": "EMPILHADERA HASTER 90",
+    "capacity": "Capacidade: 3900KG",
+    "manufacturer": null,
+    "quantity": 1,
+    "status": "INOPERANTE",
+    "maintenance": [],
+    "history": [
+      {
+        "date": "01/11/2025 20:58:25",
+        "text": "Carregado do banco de dados."
+      }
+    ],
+    "nextMaint": null
+  },
+  {
+    "id": "W043",
+    "name": "EMPILHADERA YALE",
+    "capacity": "N/A",
+    "manufacturer": null,
+    "quantity": 1,
+    "status": "INOPERANTE",
+    "maintenance": [],
+    "history": [
+      {
+        "date": "01/11/2025 20:58:25",
+        "text": "Carregado do banco de dados."
+      }
+    ],
+    "nextMaint": null
+  },
+  {
+    "id": "W044",
+    "name": "EMPILHADERA HASTER 60",
+    "capacity": "N/A",
+    "manufacturer": null,
+    "quantity": 1,
+    "status": "INOPERANTE",
+    "maintenance": [],
+    "history": [
+      {
+        "date": "01/11/2025 20:58:25",
+        "text": "Carregado do banco de dados."
+      }
+    ],
+    "nextMaint": null
+  },
+  {
+    "id": "W045",
+    "name": "PÓRTICO 2500 kg",
+    "capacity": "N/A",
+    "manufacturer": null,
+    "quantity": 1,
+    "status": "EM OPERAÇÃO",
+    "maintenance": [],
+    "history": [
+      {
+        "date": "01/11/2025 20:58:25",
+        "text": "Carregado do banco de dados."
+      }
+    ],
+    "nextMaint": null
+  },
+  {
+    "id": "W046",
+    "name": "COMPRESSOR SCHULS 7,5HP",
+    "capacity": "Fabricante: SCHULS",
+    "manufacturer": null,
+    "quantity": 2,
+    "status": "HORAS EXCEDENTES",
+    "maintenance": [],
+    "history": [
+      {
+        "date": "01/11/2025 20:58:25",
+        "text": "Carregado do banco de dados."
+      }
+    ],
+    "nextMaint": null
+  },
+  {
+    "id": "W047",
+    "name": "COMPR/SCHULS 15HP",
+    "capacity": "Fabricante: SCHULS",
+    "manufacturer": null,
+    "quantity": 1,
+    "status": "EM OPERAÇÃO",
+    "maintenance": [],
+    "history": [
+      {
+        "date": "01/11/2025 20:58:25",
+        "text": "Carregado do banco de dados."
+      }
+    ],
+    "nextMaint": null
+  },
+  {
+    "id": "W048",
+    "name": "COMPR/SCHULS 30HP",
+    "capacity": "Fabricante: SCHULS",
+    "manufacturer": null,
+    "quantity": 1,
+    "status": "EM OPERAÇÃO",
+    "maintenance": [],
+    "history": [
+      {
+        "date": "01/11/2025 20:58:25",
+        "text": "Carregado do banco de dados."
+      }
+    ],
+    "nextMaint": null
+  },
+  {
+    "id": "W049",
+    "name": "COMPR/SCHULS 100HP",
+    "capacity": "Fabricante: SCHULS",
+    "manufacturer": null,
+    "quantity": 1,
+    "status": "EM OPERAÇÃO",
+    "maintenance": [],
+    "history": [
+      {
+        "date": "01/11/2025 20:58:25",
+        "text": "Carregado do banco de dados."
+      }
+    ],
+    "nextMaint": null
+  },
+  {
+    "id": "W050",
+    "name": "V/CORPOS CILINDRICO 14\" a 48\"",
+    "capacity": "N/A",
+    "manufacturer": null,
+    "quantity": 1,
+    "status": "OK",
+    "maintenance": [],
+    "history": [
+      {
+        "date": "01/11/2025 20:58:25",
+        "text": "Carregado do banco de dados."
+      }
+    ],
+    "nextMaint": null
+  },
+  {
+    "id": "W051",
+    "name": "V/CORPOS CILINDRICO 14\" a 48\"",
+    "capacity": "N/A",
+    "manufacturer": null,
+    "quantity": 1,
+    "status": "OK",
+    "maintenance": [],
+    "history": [
+      {
+        "date": "01/11/2025 20:58:25",
+        "text": "Carregado do banco de dados."
+      }
+    ],
+    "nextMaint": null
+  },
+  {
+    "id": "W052",
+    "name": "V/CORPOS CILINDRICO 20\" a 60\"",
+    "capacity": "N/A",
+    "manufacturer": null,
+    "quantity": 1,
+    "status": "HORAS EXCEDENTES",
+    "maintenance": [],
+    "history": [
+      {
+        "date": "01/11/2025 20:58:25",
+        "text": "Carregado do banco de dados."
+      }
+    ],
+    "nextMaint": null
+  }
+]

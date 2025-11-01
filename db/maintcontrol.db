@@ -1,0 +1,45 @@
+CREATE DATABASE IF NOT EXISTS maintcontrol_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+USE maintcontrol_db;
+
+-- Tabela para armazenar as máquinas
+CREATE TABLE IF NOT EXISTS maquinas (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nome VARCHAR(100) NOT NULL,
+    descricao TEXT,
+    tag VARCHAR(50) UNIQUE NOT NULL, -- Corresponde à TAG/ID da máquina
+    horas_uso INT DEFAULT 0,
+    status ENUM('OK', 'EM OPERAÇÃO', 'EM MANUTENÇÃO', 'INOPERANTE', 'ESPERANDO PEÇAS', 'HORAS EXCEDENTES') DEFAULT 'OK'
+);
+
+-- Tabela para armazenar o agendamento de manutenção preventiva
+CREATE TABLE IF NOT EXISTS agendamentos (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    maquina_id INT NOT NULL,
+    data_agendada DATE NOT NULL,
+    observacoes TEXT,
+    criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (maquina_id) REFERENCES maquinas(id) ON DELETE CASCADE
+);
+
+-- Tabela para armazenar o histórico de ações e mudanças de status
+CREATE TABLE IF NOT EXISTS historico (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    maquina_id INT NOT NULL,
+    data_hora DATETIME DEFAULT CURRENT_TIMESTAMP,
+    descricao TEXT NOT NULL, -- O texto do histórico (ex: "Status alterado para EM MANUTENÇÃO")
+    tipo VARCHAR(50), -- Opcional: Tipo de evento (Ex: 'STATUS_CHANGE', 'SERVICE', 'NOTE')
+    FOREIGN KEY (maquina_id) REFERENCES maquinas(id) ON DELETE CASCADE
+);
+
+
+-- Tabela para armazenar os registros de manutenções realizadas
+CREATE TABLE IF NOT EXISTS manutencoes (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    maquina_id INT NOT NULL,
+    data_servico DATE NOT NULL,
+    tipo_servico VARCHAR(100) NOT NULL,
+    custo DECIMAL(10, 2),
+    responsavel VARCHAR(100),
+    observacoes TEXT,
+    FOREIGN KEY (maquina_id) REFERENCES maquinas(id) ON DELETE CASCADE
+);
