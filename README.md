@@ -18,4 +18,4 @@ Análise e Relatórios: Gere relatórios sobre tempos de inatividade (downtime),
 
 Gerenciamento de Peças: Controle o estoque de peças de reposição necessárias para a manutenção.
 
-𝔸𝕀ℕ𝔻𝔸 𝔼𝕄 𝔻𝔼𝕊𝔼ℕ𝕍𝕆𝕃𝕍𝕀𝕄𝔼ℕ𝕋𝕆
+𝔸𝕀ℕ𝔻𝔸 𝔼𝕄 𝔻𝔼𝕊𝔼ℕ𝕍𝕆𝕃𝕍𝕀𝕄𝔼ℕ𝕋𝕆👌
