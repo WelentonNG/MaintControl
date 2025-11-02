@@ -64,6 +64,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 state.machines = data.machines.map(m => {
                     // Garante que todas as propriedades do JS existam
                     m.maintenance = m.maintenance || [];
+                    // CORREÇÃO: Garante que os passos (steps) dentro de CADA manutenção existam.
+                    m.maintenance = m.maintenance.map(maint => {
+                        maint.steps = maint.steps || [];
+                        // Simula um ID, caso o DB não forneça, para as operações de Etapa/Finalizar
+                        maint.id = maint.id || Date.now(); 
+                        return maint;
+                    });
                     m.history = m.history || [];
                     m.nextMaint = m.nextMaint || null;
                     m.quantity = Number(m.quantity) || 1;
@@ -80,42 +87,37 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    // Esta função não é mais usada, pois as ações salvam diretamente.
     const saveState = () => { 
         console.warn("saveState() não faz mais nada. As ações devem chamar a API.");
     };
 
-    // Função auxiliar para atualizar um campo simples da máquina no banco de dados
     const updateMachineField = async (machine, field, value) => { 
         const apiData = {
             action: 'update_field',
-            tag: machine.id, // ID da máquina (tag no DB)
+            tag: machine.id, 
             field: field,
             value: value
         };
         
         try {
             await sendApiRequest(API_URL, 'PUT', apiData);
-            machine[field] = value; // Atualiza o estado local após o sucesso da API
+            machine[field] = value; 
             return true;
         } catch (e) {
-            // O notify já tratou o erro
             return false;
         }
     };
 
-    const addHistory = async (machine, text) => { // AGORA É ASSÍNCRONA E CHAMA API
+    const addHistory = async (machine, text) => { 
         if (!machine) return;
         
         const historyEntry = { 
-            tag: machine.id, // ID da máquina (tag no DB)
+            tag: machine.id, 
             description: text, 
         };
         
         try {
-             // Chamada API para adicionar histórico (Requer implementação no api.php)
             await sendApiRequest(API_URL, 'POST', { action: 'add_history', data: historyEntry });
-            // Atualiza o estado local para renderização imediata
             machine.history = machine.history || [];
             machine.history.push({ date: new Date().toLocaleString('pt-BR'), text });
         } catch (e) {
@@ -360,7 +362,7 @@ document.addEventListener('DOMContentLoaded', () => {
             descTextarea.value = '';
         }
         
-        scheduleForm.onsubmit = async (e) => { // AGORA É ASSÍNCRONA
+        scheduleForm.onsubmit = async (e) => { 
             e.preventDefault();
             const date = dateInput.value;
             const desc = descTextarea.value.trim();
@@ -372,7 +374,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const newMaint = { date, desc };
 
-            // Salva o objeto nextMaint como JSON no campo 'next_maint' no DB (Requer implementação no api.php)
             if (await updateMachineField(machine, 'nextMaint', JSON.stringify(newMaint))) {
                 await addHistory(machine, `Próxima manutenção agendada para: ${formatDate(date)}`);
                 notify('Agendamento salvo!', 'success');
@@ -381,10 +382,9 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         };
 
-        clearBtn.onclick = async () => { // AGORA É ASSÍNCRONA
+        clearBtn.onclick = async () => { 
             if (!machine.nextMaint) return;
             
-             // Salva 'null' no campo 'nextMaint' no DB (Requer implementação no api.php)
             if (await updateMachineField(machine, 'nextMaint', null)) {
                 await addHistory(machine, `Agendamento de próxima manutenção cancelado.`);
                 notify('Agendamento limpo.', 'info');
@@ -437,7 +437,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     // ======== FUNÇÕES DE AÇÃO (ADICIONAR/EXCLUIR/ETC) ========
-    const addMachine = async () => { // AGORA É ASSÍNCRONA E CHAMA API
+    const addMachine = async () => { 
         const id = document.getElementById('idItem').value.trim();
         const name = document.getElementById('nomeMaquina').value.trim();
         if (!id || !name) {
@@ -464,7 +464,6 @@ document.addEventListener('DOMContentLoaded', () => {
             };
             await sendApiRequest(API_URL, 'POST', apiData);
             
-            // Simula o histórico inicial para o estado local e adiciona ao DB
             await addHistory(newMachine, 'Máquina registrada no sistema.');
             
             state.machines.unshift(newMachine);
@@ -473,40 +472,34 @@ document.addEventListener('DOMContentLoaded', () => {
             notify('Máquina adicionada com sucesso!', 'success');
             render();
         } catch (e) {
-            // O notify já tratou o erro
         }
     };
 
-    const deleteMachine = async (index) => { // AGORA É ASSÍNCRONA E CHAMA API
+    const deleteMachine = async (index) => { 
         const machine = state.machines[index];
         if (!machine) return;
 
         try {
             const apiData = {
                 action: 'delete_machine',
-                tag: machine.id // Usa o ID da máquina (tag no DB)
+                tag: machine.id 
             };
             await sendApiRequest(API_URL, 'DELETE', apiData);
             
-            // Remove do estado local após sucesso na API
             state.machines.splice(index, 1);
             notify('Máquina removida.', 'info');
             render();
-            // Se o modal estiver aberto, fecha
             if (state.editingIndex !== null) closeModal();
         } catch (e) {
-            // O notify já tratou o erro
         }
     };
 
-    // Função de atualização de quantidade
-    const updateQuantity = async (index, change) => { // AGORA É ASSÍNCRONA
+    const updateQuantity = async (index, change) => { 
         const machine = state.machines[index];
         const oldQty = machine.quantity;
         const newQty = Math.max(1, oldQty + change);
 
         if (oldQty !== newQty) {
-            // updateMachineField é async e retorna true/false
             if (await updateMachineField(machine, 'quantity', newQty)) {
                 await addHistory(machine, `Quantidade alterada de ${oldQty} para ${newQty}.`);
                 notify('Quantidade atualizada', 'success');
@@ -567,11 +560,10 @@ document.addEventListener('DOMContentLoaded', () => {
             if (confirm('Tem certeza que deseja excluir esta máquina?')) deleteMachine(+e.currentTarget.dataset.idx);
         }));
         
-        // Eventos para botões de Quantidade
         document.querySelectorAll('.btn-qty-inc').forEach(b => b.addEventListener('click', e => updateQuantity(+e.currentTarget.dataset.idx, 1)));
         document.querySelectorAll('.btn-qty-dec').forEach(b => b.addEventListener('click', e => updateQuantity(+e.currentTarget.dataset.idx, -1)));
 
-        document.querySelectorAll('input[data-field="quantity"]').forEach(inp => inp.addEventListener('change', async e => { // AGORA É ASSÍNCRONA
+        document.querySelectorAll('input[data-field="quantity"]').forEach(inp => inp.addEventListener('change', async e => { 
             const index = +e.currentTarget.dataset.idx;
             const machine = state.machines[index];
             const oldQty = machine.quantity;
@@ -583,11 +575,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     notify('Quantidade atualizada', 'success');
                 }
             }
-            e.currentTarget.value = machine.quantity; // Usa o valor real do state após a tentativa de API
+            e.currentTarget.value = machine.quantity; 
             render();
         }));
 
-        document.querySelectorAll('.statusSel').forEach(s => s.addEventListener('change', async e => { // AGORA É ASSÍNCRONA
+        document.querySelectorAll('.statusSel').forEach(s => s.addEventListener('change', async e => { 
             const index = +e.currentTarget.dataset.idx;
             const machine = state.machines[index];
             const oldStatus = machine.status;
@@ -597,13 +589,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 await addHistory(machine, `Status alterado de "${oldStatus}" para "${newStatus}".`);
                 render();
             } else {
-                 e.currentTarget.value = oldStatus; // Reverte se falhar
+                 e.currentTarget.value = oldStatus; 
             }
         }));
 
         document.querySelectorAll('.editable').forEach(td => {
             td.addEventListener('keydown', e => { if(e.key === 'Enter') { e.preventDefault(); e.target.blur(); }});
-            td.addEventListener('blur', async e => { // AGORA É ASSÍNCRONA
+            td.addEventListener('blur', async e => { 
                 const idx = +e.currentTarget.dataset.idx;
                 const machine = state.machines[idx];
                 const field = e.currentTarget.dataset.field;
@@ -615,7 +607,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         await addHistory(machine, `Campo "${field}" alterado de "${oldValue}" para "${newValue}".`);
                         notify('Alteração salva!', 'success');
                     } else {
-                        e.currentTarget.textContent = oldValue; // Reverte se falhar
+                        e.currentTarget.textContent = oldValue; 
                     }
                 }
             });
@@ -624,7 +616,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const addMaintenanceEventListeners = () => {
         // Iniciar Manutenção
-        document.getElementById('maintFormNew')?.addEventListener('submit', async (e) => { // AGORA É ASSÍNCRONA
+        document.getElementById('maintFormNew')?.addEventListener('submit', async (e) => { 
             e.preventDefault();
             const i = state.editingIndex;
             const machine = state.machines[i];
@@ -633,15 +625,15 @@ document.addEventListener('DOMContentLoaded', () => {
             const startDate = document.getElementById('maintStartDate').value;
             if (!desc) { notify('A descrição é obrigatória.', 'error'); return; }
 
+            const newMaintId = Date.now(); 
             const newMaint = { tag: machine.id, type, desc, start_date: startDate };
             
             try {
-                // Chamada API para iniciar manutenção (Requer implementação no api.php)
                 await sendApiRequest(API_URL, 'POST', { action: 'start_maintenance', data: newMaint });
 
-                // Se for sucesso, atualiza o estado local e histórico
                 machine.maintenance = machine.maintenance || [];
-                machine.maintenance.push({ type, desc, start_date: startDate, end_date: null, steps: [] });
+                // Adiciona o ID simulado e a lista de steps vazia no estado local.
+                machine.maintenance.push({ id: newMaintId, type, desc, start_date: startDate, end_date: null, steps: [] }); 
                 
                 await addHistory(machine, `Manutenção (${type}) INICIADA. Motivo: ${desc}`);
                 if (await updateMachineField(machine, 'status', 'EM MANUTENÇÃO')) {
@@ -649,16 +641,15 @@ document.addEventListener('DOMContentLoaded', () => {
                     render();
                     openModal(i);
                 } else {
-                    // Reverte o histórico e o estado local se a atualização de status falhar
                     machine.maintenance.pop();
                     machine.history.pop();
                 }
 
-            } catch(e) { /* O notify já tratou o erro */ }
+            } catch(e) { }
         });
 
         // Registrar Etapa
-        document.getElementById('maintFormStep')?.addEventListener('submit', async (e) => { // AGORA É ASSÍNCRONA
+        document.getElementById('maintFormStep')?.addEventListener('submit', async (e) => { 
             e.preventDefault();
             const i = state.editingIndex;
             const machine = state.machines[i];
@@ -671,11 +662,10 @@ document.addEventListener('DOMContentLoaded', () => {
             const newStep = {
                 tag: machine.id, 
                 description: stepDesc, 
-                maint_id: activeMaint.id // Você precisará do ID da manutenção do DB aqui
+                maint_id: activeMaint.id 
             };
             
             try {
-                 // Chamada API para registrar etapa (Requer implementação no api.php)
                 await sendApiRequest(API_URL, 'PUT', { action: 'add_maint_step', data: newStep });
 
                 activeMaint.steps.push({ date: new Date().toLocaleString('pt-BR'), description: stepDesc });
@@ -683,11 +673,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 notify('Etapa registrada!', 'info');
                 document.getElementById('stepDesc').value = '';
                 renderMaintenanceTab(); 
-            } catch(e) { /* O notify já tratou o erro */ }
+            } catch(e) { }
         });
 
         // Finalizar Manutenção
-        document.getElementById('endMaint')?.addEventListener('click', async () => { // AGORA É ASSÍNCRONA
+        document.getElementById('endMaint')?.addEventListener('click', async () => { 
             const i = state.editingIndex;
             const machine = state.machines[i];
             const activeMaint = (machine.maintenance || []).find(x => !x.end_date);
@@ -695,10 +685,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const endDate = prompt("Informe a data de finalização (AAAA-MM-DD):", new Date().toISOString().slice(0, 10));
             if (endDate) {
-                const finishData = { tag: machine.id, end_date: endDate, maint_id: activeMaint.id };
+                const finishData = { 
+                    tag: machine.id, 
+                    end_date: endDate, 
+                    maint_id: activeMaint.id 
+                };
                 
                 try {
-                     // Chamada API para finalizar manutenção (Requer implementação no api.php)
                     await sendApiRequest(API_URL, 'PUT', { action: 'end_maintenance', data: finishData });
 
                     activeMaint.end_date = endDate;
@@ -709,7 +702,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         render();
                         closeModal();
                     }
-                } catch(e) { /* O notify já tratou o erro */ }
+                } catch(e) { }
             }
         });
     };
@@ -723,28 +716,41 @@ document.addEventListener('DOMContentLoaded', () => {
                 chart.update();
             }
         };
-        document.getElementById('toggleChartFullscreen').addEventListener('click', function() {
-        const chartPanel = document.getElementById('chartPanel');
-        const toggleChartIcon = this.querySelector('i');
-        const isFullscreen = chartPanel.classList.toggle('fullscreen');
-
-        if (isFullscreen) {
-            toggleChartIcon.classList.replace('fa-expand', 'fa-compress');
-            this.title = 'Sair da Tela Cheia';
-        } else {
-            toggleChartIcon.classList.replace('fa-compress', 'fa-expand');
-            this.title = 'Tela Cheia';
+        
+        // 💡 CORREÇÃO PRINCIPAL: Função auxiliar para lidar com o redimensionamento do Chart
+        const handleChartResize = () => {
+            // Usa setTimeout(0) para garantir que o navegador complete o layout
+            // após a transição CSS antes de redimensionar o Chart.js.
+            setTimeout(() => {
+                if (chart) {
+                    chart.resize();
+                    chart.update(); 
+                }
+            }, 0); 
         }
+        
+        // CORREÇÃO: Usar transitionend combinado com setTimeout(0)
+        document.getElementById('toggleChartFullscreen').addEventListener('click', function() {
+            const chartPanel = document.getElementById('chartPanel');
+            const toggleChartIcon = this.querySelector('i');
+            const isFullscreen = chartPanel.classList.toggle('fullscreen');
 
-        // Força o Chart.js a redimensionar após transição
-        setTimeout(() => {
-            if (chart) chart.resize();
-        }, 300);
+            if (isFullscreen) {
+                toggleChartIcon.classList.replace('fa-expand', 'fa-compress');
+                this.title = 'Sair da Tela Cheia';
+                
+            } else {
+                toggleChartIcon.classList.replace('fa-compress', 'fa-expand');
+                this.title = 'Tela Cheia';
+                window.location.reload(true);
+            }
+
+            chartPanel.removeEventListener('transitionend', handleChartResize);
+            chartPanel.addEventListener('transitionend', handleChartResize, { once: true });
         });
 
 
-
-        // Exportação de JSON (Permanece local para backup)
+        // Exportação de JSON
         document.getElementById('exportJson').addEventListener('click', () => {
             const dataStr = JSON.stringify(state.machines, null, 2);
             const blob = new Blob([dataStr], { type: 'application/json' });
@@ -757,7 +763,7 @@ document.addEventListener('DOMContentLoaded', () => {
             notify('Dados exportados.', 'info');
         });
 
-        // Importação de JSON (Permanece local para importação/restauração, mas não afetará o DB sem o backend)
+        // Importação de JSON
         const importFile = document.getElementById('importFile');
         document.getElementById('importBtn').addEventListener('click', () => importFile.click());
         importFile.addEventListener('change', e => {
@@ -775,7 +781,6 @@ document.addEventListener('DOMContentLoaded', () => {
                             m.nextMaint = m.nextMaint || null;
                             return m;
                         });
-                        // Não há saveState() para o DB aqui. Apenas atualiza o estado local.
                         render();
                         notify('Dados carregados na interface. Use "Adicionar" para salvar no DB.', 'warning');
                     }
@@ -786,6 +791,14 @@ document.addEventListener('DOMContentLoaded', () => {
             reader.readAsText(file);
             e.target.value = '';
         });
+        
+        document.getElementById('toggleTheme').addEventListener('click', () => {
+            const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            localStorage.setItem('theme', newTheme);
+            applyTheme();
+        });
+        applyTheme();
     };
 
     // ======== FUNÇÕES AUXILIARES DE FORMATAÇÃO ========
@@ -811,7 +824,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     // ======== INICIALIZAÇÃO ========
-    const init = async () => { // AGORA É ASSÍNCRONA
+    const init = async () => { 
         await loadState();
         populateFilter();
         addEventListeners();
