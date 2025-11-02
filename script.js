@@ -723,12 +723,26 @@ document.addEventListener('DOMContentLoaded', () => {
                 chart.update();
             }
         };
-        document.getElementById('toggleTheme').addEventListener('click', () => {
-            const newTheme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
-            localStorage.setItem('theme', newTheme);
-            applyTheme();
+        document.getElementById('toggleChartFullscreen').addEventListener('click', function() {
+        const chartPanel = document.getElementById('chartPanel');
+        const toggleChartIcon = this.querySelector('i');
+        const isFullscreen = chartPanel.classList.toggle('fullscreen');
+
+        if (isFullscreen) {
+            toggleChartIcon.classList.replace('fa-expand', 'fa-compress');
+            this.title = 'Sair da Tela Cheia';
+        } else {
+            toggleChartIcon.classList.replace('fa-compress', 'fa-expand');
+            this.title = 'Tela Cheia';
+        }
+
+        // Força o Chart.js a redimensionar após transição
+        setTimeout(() => {
+            if (chart) chart.resize();
+        }, 300);
         });
-        applyTheme();
+
+
 
         // Exportação de JSON (Permanece local para backup)
         document.getElementById('exportJson').addEventListener('click', () => {

@@ -209,3 +209,48 @@ tr.row:hover{background:color-mix(in srgb, var(--bg) 50%, transparent)}
     width: 25px;
     height: 25px;
 }
+
+
+/* ====== ESTILOS PARA TELA CHEIA DO GRÁFICO CORRIGIDO E FORÇADO ====== */
+
+/* Estilo que é aplicado ao painel quando a classe 'fullscreen' é adicionada via JS */
+#chartPanel.fullscreen {
+  position: fixed !important; /* Força a posição fixa para cobrir a tela */
+  top: 0 !important;
+  left: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  z-index: 9999 !important; /* Força a camada mais alta */
+  border-radius: 0 !important; 
+  background: var(--card) !important; /* Garante que o fundo seja opaco */
+  padding: 24px !important;
+  
+  /* Usa flexbox para fazer o gráfico interno crescer */
+  display: flex !important; 
+  flex-direction: column !important;
+}
+
+/* Faz o container do gráfico (o div com o canvas) crescer */
+#chartPanel.fullscreen #chartContainer {
+  flex-grow: 1 !important; /* Ocupa todo o espaço vertical disponível */
+  height: auto !important; /* Sobrescreve a altura fixa de 400px */
+  max-height: none !important; 
+}
+
+/* Garante que o canvas se ajuste corretamente dentro do container */
+#chartPanel.fullscreen #statusChart {
+    max-height: 100% !important; 
+    width: 100% !important;
+}
+
+/* Esconde o resto do conteúdo para focar no gráfico, mantendo a tela limpa */
+/* O seletor `.wrap > header:not(.fullscreen)` foi removido pois a regra anterior já é mais específica e resolve */
+#chartPanel.fullscreen ~ .grid-2, 
+#chartPanel.fullscreen ~ header {
+    display: none !important;
+}
+
+/* Garante que o cabeçalho DENTRO do painel fullscreen seja visto (para o botão 'fechar') */
+#chartPanel.fullscreen > div:first-child { 
+    display: flex !important;
+}

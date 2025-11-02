@@ -59,13 +59,21 @@
 
           <div style="height:24px"></div>
 
-          <div class="panel">
-            <h3 style="margin-top:0">Visão Geral de Status</h3>
-            <div style="position: relative; height:400px;">
+          <div class="panel" id="chartPanel">
+            
+            <div style="display:flex;justify-content:space-between;align-items:center; margin-bottom: 20px;">
+              <h3 style="margin-top:0; margin-bottom: 0;">Visão Geral de Status</h3>
+              
+              <button id="toggleChartFullscreen" class="btn secondary" title="Tela Cheia" style="padding: 6px 10px; font-size: 14px;">
+                  <i class="fa-solid fa-expand"></i>
+              </button>
+            </div>
+            
+            <div id="chartContainer" style="position: relative; height:400px;">
               <canvas id="statusChart"></canvas>
             </div>
           </div>
-        </div>
+          </div>
 
         <aside>
           <div class="panel">
