@@ -31,6 +31,8 @@ try {
                 handleAddMachine($pdo, $input['data']);
             } elseif ($action === 'add_history') {
                 handleAddHistory($pdo, $input['data']);
+            } elseif ($action === 'start_maintenance') { // <-- COLE AQUI
+                handleStartMaintenance($pdo, $input['data']);
             } else {
                 throw new Exception('Ação POST desconhecida.');
             }
@@ -39,10 +41,8 @@ try {
         case 'PUT':
             if ($action === 'update_field') {
                 handleUpdateField($pdo, $input['tag'], $input['field'], $input['value']);
-            } elseif ($action === 'start_maintenance') {
-                handleStartMaintenance($pdo, $input['data']);
-            } elseif ($action === 'add_maint_step') {
-                handleAddHistory($pdo, $input['data']); // Simplesmente registra como histórico por enquanto
+            } elseif ($action === 'add_maint_step') { // <-- RECORTE DAQUI
+                handleAddHistory($pdo, $input['data']); 
             } elseif ($action === 'end_maintenance') {
                 handleEndMaintenance($pdo, $input['data']);
             } else {
@@ -76,19 +76,27 @@ try {
 // FUNÇÕES DE MANIPULAÇÃO DO DB
 // =========================================================================
 
+// api.php (SUBSTITUIR A FUNÇÃO handleGetMachines INTEIRA)
+
 function handleGetMachines($pdo) {
     
     // Busca máquinas com todas as colunas que você tem
     $stmt = $pdo->query("SELECT id, nome, tag, status, descricao, horas_uso FROM maquinas");
     $machines_db = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-    $history_data = $pdo->query("SELECT maquina_id, data_hora, descricao FROM historico")->fetchAll(PDO::FETCH_GROUP);
+    // Busca dados agrupados por maquina_id
+    $history_data = $pdo->query("SELECT maquina_id, data_hora, descricao FROM historico ORDER BY data_hora DESC")->fetchAll(PDO::FETCH_GROUP);
     $agendamento_data = $pdo->query("SELECT maquina_id, data_agendada, observacoes FROM agendamentos")->fetchAll(PDO::FETCH_GROUP);
-    $manutencao_data = $pdo->query("SELECT maquina_id, data_servico, tipo_servico, observacoes FROM manutencoes")->fetchAll(PDO::FETCH_GROUP);
+    
+    // NOVO: Busca todos os campos da tabela manutencoes, ordenados do mais recente para o mais antigo.
+    // Inclui 'data_fim' para determinar se a manutenção está concluída.
+    $manutencao_data = $pdo->query("SELECT id, maquina_id, data_servico, tipo_servico, observacoes, data_fim FROM manutencoes ORDER BY data_servico DESC")->fetchAll(PDO::FETCH_GROUP);
+
 
     $formattedMachines = array_map(function($m) use ($history_data, $agendamento_data, $manutencao_data) {
         $id_maquina_db = $m['id']; 
         
+        // Mapeamento do Histórico (mantido o antigo para a aba de histórico geral)
         $history = isset($history_data[$id_maquina_db]) ? 
             array_map(function($h) { 
                 return [
@@ -98,21 +106,22 @@ function handleGetMachines($pdo) {
             }, $history_data[$id_maquina_db]) : 
             [['date' => date('d/m/Y H:i:s'), 'text' => 'Carregado do banco de dados.']];
 
-        // Lida com a possibilidade de múltiplos agendamentos, pegando apenas o primeiro
+        // Mapeamento do Agendamento (mantido)
         $nextMaint = isset($agendamento_data[$id_maquina_db][0]) ? 
             [
                 'date' => $agendamento_data[$id_maquina_db][0]['data_agendada'], // YYYY-MM-DD
                 'desc' => $agendamento_data[$id_maquina_db][0]['observacoes']
             ] : null;
 
+        // NOVO: Mapeamento dos Registros de Manutenção para o Accordion
         $maintenance_history = isset($manutencao_data[$id_maquina_db]) ? 
             array_map(function($maint) { 
                 return [
+                    'id' => $maint['id'],
                     'start_date' => $maint['data_servico'],
+                    'end_date' => $maint['data_fim'], // Usa a data de fim (pode ser NULL)
                     'type' => $maint['tipo_servico'],
                     'desc' => $maint['observacoes'],
-                    // Propriedades do JS que não existem no DB (serão null)
-                    'end_date' => $maint['data_servico'],
                     'steps' => []
                 ];
             }, $manutencao_data[$id_maquina_db]) : [];
@@ -121,11 +130,11 @@ function handleGetMachines($pdo) {
         return [
             'id' => $m['tag'], 
             'name' => $m['nome'],
-            'capacity' => isset($m['descricao']) ? $m['descricao'] : 'N/A', // Mapeando 'descricao' do DB para 'capacity' no JS
-            'manufacturer' => null, // Campo não existe no DB, retorna null
-            'quantity' => (int)(isset($m['horas_uso']) ? $m['horas_uso'] : 1), // Mapeando 'horas_uso' do DB para 'quantity' no JS
+            'capacity' => isset($m['descricao']) ? $m['descricao'] : 'N/A', 
+            'manufacturer' => null, 
+            'quantity' => (int)(isset($m['horas_uso']) ? $m['horas_uso'] : 1), 
             'status' => $m['status'],
-            'maintenance' => $maintenance_history,
+            'maintenance' => $maintenance_history, // NOVO CAMPO
             'history' => $history,
             'nextMaint' => $nextMaint
         ];
@@ -133,6 +142,7 @@ function handleGetMachines($pdo) {
 
     echo json_encode(['status' => 'success', 'machines' => $formattedMachines]);
 }
+// FIM da função handleGetMachines
 
 
 function handleAddMachine($pdo, $data) {

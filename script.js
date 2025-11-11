@@ -351,15 +351,20 @@ document.addEventListener('DOMContentLoaded', () => {
         const descTextarea = document.getElementById('nextMaintDesc');
         const scheduleForm = document.getElementById('scheduleForm');
         const clearBtn = document.getElementById('clearSchedule');
+        
+        // Referência ao novo botão
+        const startBtn = document.getElementById('startScheduleBtn');
 
         if (machine.nextMaint && machine.nextMaint.date) {
-            display.innerHTML = `**${formatDate(machine.nextMaint.date)}** (${escapeHtml(machine.nextMaint.desc)})`;
+            display.innerHTML = `${formatDate(machine.nextMaint.date)} (${escapeHtml(machine.nextMaint.desc)})`;
             dateInput.value = machine.nextMaint.date;
             descTextarea.value = machine.nextMaint.desc;
+            startBtn.style.display = 'inline-flex'; // MOSTRA o botão "Iniciar"
         } else {
             display.textContent = 'N/A';
             dateInput.value = '';
             descTextarea.value = '';
+            startBtn.style.display = 'none'; // ESCONDE o botão "Iniciar"
         }
         
         scheduleForm.onsubmit = async (e) => { 
@@ -377,8 +382,8 @@ document.addEventListener('DOMContentLoaded', () => {
             if (await updateMachineField(machine, 'nextMaint', JSON.stringify(newMaint))) {
                 await addHistory(machine, `Próxima manutenção agendada para: ${formatDate(date)}`);
                 notify('Agendamento salvo!', 'success');
-                renderScheduleTab();
-                render();
+                renderScheduleTab(); // Recarrega a aba
+                render(); // Atualiza as métricas (ex: Próx. Maint.)
             }
         };
 
@@ -387,9 +392,73 @@ document.addEventListener('DOMContentLoaded', () => {
             
             if (await updateMachineField(machine, 'nextMaint', null)) {
                 await addHistory(machine, `Agendamento de próxima manutenção cancelado.`);
-                notify('Agendamento limpo.', 'info');
-                renderScheduleTab();
-                render();
+                notify('Agendamento cancelado.', 'info');
+                renderScheduleTab(); // Recarrega a aba
+                render(); // Atualiza as métricas
+            }
+        };
+
+        // ===== NOVA LÓGICA PARA O BOTÃO "INICIAR AGORA" =====
+        startBtn.onclick = async () => {
+            const i = state.editingIndex;
+            const machine = state.machines[i];
+            
+            if (!machine.nextMaint) {
+                notify('Nenhum agendamento para iniciar.', 'error');
+                return;
+            }
+            
+            // 1. Verifica se já existe uma manutenção ativa
+            const activeMaint = (machine.maintenance || []).find(m => !m.end_date);
+            if (activeMaint) {
+                notify('Já existe uma manutenção ativa. Finalize-a antes de iniciar a agendada.', 'error');
+                return;
+            }
+
+            if (!confirm('Deseja iniciar a manutenção agendada agora? O status da máquina será alterado para "EM MANUTENÇÃO".')) {
+                return;
+            }
+
+            const schedule = machine.nextMaint;
+            const newMaintId = Date.now();
+            const newMaintData = {
+                tag: machine.id,
+                type: 'Preventiva', // Agendamentos são geralmente Preventivos
+                desc: schedule.desc || 'Manutenção Agendada',
+                start_date: new Date().toISOString().slice(0, 10) // Inicia hoje
+            };
+
+            try {
+                // 2. Inicia a manutenção no DB (tabela manutencoes)
+                await sendApiRequest(API_URL, 'POST', { action: 'start_maintenance', data: newMaintData });
+                
+                // 3. Atualiza estado local (adiciona na lista de manutenções ativas)
+                machine.maintenance = machine.maintenance || [];
+                machine.maintenance.push({
+                    id: newMaintId,
+                    type: newMaintData.type,
+                    desc: newMaintData.desc,
+                    start_date: newMaintData.start_date,
+                    end_date: null,
+                    steps: []
+                });
+
+                // 4. Adiciona ao histórico
+                await addHistory(machine, `Manutenção (Agendada) INICIADA. Motivo: ${newMaintData.desc}`);
+
+                // 5. Limpa o agendamento (pois ele virou uma manutenção ativa)
+                await updateMachineField(machine, 'nextMaint', null);
+                
+                // 6. Atualiza o status da máquina para "EM MANUTENÇÃO"
+                if (await updateMachineField(machine, 'status', 'EM MANUTENÇÃO')) {
+                    notify('Manutenção agendada iniciada com sucesso!', 'success');
+                    render(); // Atualiza a tabela e métricas
+                    openModal(i); // Recarrega o modal com os dados novos
+                    document.querySelector('.tab[data-tab="maintenance"]').click(); // Muda para a aba de manutenção
+                }
+            } catch (e) {
+                console.error("Falha ao iniciar manutenção agendada:", e);
+                notify('Erro ao iniciar manutenção.', 'error');
             }
         };
     };
