@@ -7,3 +7,4 @@ Main Control:
     ☐ Deixar o site todo preto 
     ☐ Possivel erro de exportação 
     ✔ Ao sair da tela cheia ele fica com o site bugado @started(25-11-02 13:13) @done(25-11-02 13:26) @lasted(13m52s)
+    ✔ Tirar o escapeHTML do site @started(25-11-15 21:07) @done(25-11-15 21:10) @lasted(3m20s)

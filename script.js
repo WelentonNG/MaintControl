@@ -24,6 +24,22 @@ document.addEventListener('DOMContentLoaded', () => {
         setTimeout(() => d.remove(), 3500);
     };
 
+    // FUNÇÃO QUE ESTAVA FALTANDO, ADICIONADA AQUI
+    const escapeHtml = (str) => {
+        if (str === null || str === undefined) return '';
+        // Converte para String e então escapa os caracteres
+        return String(str).replace(/[&<>"']/g, (match) => {
+            const escape = {
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#39;'
+            };
+            return escape[match];
+        });
+    };
+
     // Função genérica para comunicação com a API PHP
     const sendApiRequest = async (url, method, data = null) => {
         const options = {
@@ -871,9 +887,6 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     // ======== FUNÇÕES AUXILIARES DE FORMATAÇÃO ========
-
-    const escapeHtml = (s) => s ? s.toString().replace(/</g, '&lt;').replace(/>/g, '&gt;') : '';
-
     const getStatusClass = (s) => ({
         "OK": 'ok', "EM OPERAÇÃO": 'op', "EM MANUTENÇÃO": 'maint',
         "INOPERANTE": 'inop', "ESPERANDO PEÇAS": 'wait', "HORAS EXCEDENTES": 'exc'
