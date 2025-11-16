@@ -837,7 +837,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     chart.resize();
                     chart.update(); 
                 }
-            }, 0); 
+            }, 0);
         }
         
         // CORREÇÃO: Usar transitionend combinado com setTimeout(0)
