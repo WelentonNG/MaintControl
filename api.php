@@ -10,6 +10,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit;
 }
 
+// ATENÇÃO: É NECESSÁRIO CRIAR O ARQUIVO 'conexao.php' com a conexão PDO!
 require_once 'conexao.php'; // Inclui o arquivo de conexão
 
 $method = $_SERVER['REQUEST_METHOD'];
@@ -31,7 +32,7 @@ try {
                 handleAddMachine($pdo, $input['data']);
             } elseif ($action === 'add_history') {
                 handleAddHistory($pdo, $input['data']);
-            } elseif ($action === 'start_maintenance') { // <-- COLE AQUI
+            } elseif ($action === 'start_maintenance') {
                 handleStartMaintenance($pdo, $input['data']);
             } else {
                 throw new Exception('Ação POST desconhecida.');
@@ -41,10 +42,13 @@ try {
         case 'PUT':
             if ($action === 'update_field') {
                 handleUpdateField($pdo, $input['tag'], $input['field'], $input['value']);
-            } elseif ($action === 'add_maint_step') { // <-- RECORTE DAQUI
+            } elseif ($action === 'add_maint_step') { 
+                // A ação 'add_maint_step' foi mapeada para 'handleAddHistory' no script.js, 
+                // mas você pode criar uma função dedicada para passos de manutenção se criar a tabela 'passos_manutencao'.
+                // Por enquanto, apenas registramos no histórico geral.
                 handleAddHistory($pdo, $input['data']); 
             } elseif ($action === 'end_maintenance') {
-                handleEndMaintenance($pdo, $input['data']);
+                handleEndMaintenance($pdo, $input['data']); // <-- CORRIGIDO AQUI
             } else {
                 throw new Exception('Ação PUT desconhecida.');
             }
@@ -64,8 +68,14 @@ try {
             exit;
     }
 } catch (PDOException $e) {
+    // Captura o erro 1054 (Coluna não encontrada) e fornece uma mensagem mais clara
+    if ($e->getCode() === '42S22') {
+         $message = 'Erro no Banco de Dados: Coluna não encontrada (provavelmente "data_fim"). Execute o SQL: ALTER TABLE manutencoes ADD COLUMN data_fim DATE NULL;';
+    } else {
+         $message = 'Erro no Banco de Dados: ' . $e->getMessage();
+    }
     http_response_code(500);
-    echo json_encode(['status' => 'error', 'message' => 'Erro no Banco de Dados: ' . $e->getMessage()]);
+    echo json_encode(['status' => 'error', 'message' => $message]);
 } catch (Exception $e) {
     http_response_code(400);
     echo json_encode(['status' => 'error', 'message' => $e->getMessage()]);
@@ -76,11 +86,10 @@ try {
 // FUNÇÕES DE MANIPULAÇÃO DO DB
 // =========================================================================
 
-// api.php (SUBSTITUIR A FUNÇÃO handleGetMachines INTEIRA)
-
+// api.php (FUNÇÃO handleGetMachines CORRIGIDA)
 function handleGetMachines($pdo) {
     
-    // Busca máquinas com todas as colunas que você tem
+    // Busca máquinas com todas as colunas
     $stmt = $pdo->query("SELECT id, nome, tag, status, descricao, horas_uso FROM maquinas");
     $machines_db = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
@@ -88,8 +97,8 @@ function handleGetMachines($pdo) {
     $history_data = $pdo->query("SELECT maquina_id, data_hora, descricao FROM historico ORDER BY data_hora DESC")->fetchAll(PDO::FETCH_GROUP);
     $agendamento_data = $pdo->query("SELECT maquina_id, data_agendada, observacoes FROM agendamentos")->fetchAll(PDO::FETCH_GROUP);
     
-    // NOVO: Busca todos os campos da tabela manutencoes, ordenados do mais recente para o mais antigo.
-    // Inclui 'data_fim' para determinar se a manutenção está concluída.
+    // NOVO: Busca todos os campos da tabela manutencoes.
+    // O campo 'data_fim' DEVE EXISTIR AGORA (após a correção no DB).
     $manutencao_data = $pdo->query("SELECT id, maquina_id, data_servico, tipo_servico, observacoes, data_fim FROM manutencoes ORDER BY data_servico DESC")->fetchAll(PDO::FETCH_GROUP);
 
 
@@ -113,16 +122,18 @@ function handleGetMachines($pdo) {
                 'desc' => $agendamento_data[$id_maquina_db][0]['observacoes']
             ] : null;
 
-        // NOVO: Mapeamento dos Registros de Manutenção para o Accordion
+        // Mapeamento dos Registros de Manutenção para o Accordion
         $maintenance_history = isset($manutencao_data[$id_maquina_db]) ? 
             array_map(function($maint) { 
+                // NOTA: Se você tiver uma tabela 'passos_manutencao', deverá fazer uma nova query aqui.
+                // Por enquanto, steps[] será vazio, pois não há tabela de passos.
                 return [
-                    'id' => $maint['id'],
+                    'id' => $maint['id'], // ID real da manutenção no DB
                     'start_date' => $maint['data_servico'],
-                    'end_date' => $maint['data_fim'], // Usa a data de fim (pode ser NULL)
+                    'end_date' => $maint['data_fim'], // Usa a data de fim (será NULL para ativa)
                     'type' => $maint['tipo_servico'],
                     'desc' => $maint['observacoes'],
-                    'steps' => []
+                    'steps' => [] // Vazio, pois não temos a tabela passos
                 ];
             }, $manutencao_data[$id_maquina_db]) : [];
 
@@ -131,10 +142,10 @@ function handleGetMachines($pdo) {
             'id' => $m['tag'], 
             'name' => $m['nome'],
             'capacity' => isset($m['descricao']) ? $m['descricao'] : 'N/A', 
-            'manufacturer' => null, 
+            'manufacturer' => null, // Campo 'manufacturer' não existe no seu DB, mantido 'null'
             'quantity' => (int)(isset($m['horas_uso']) ? $m['horas_uso'] : 1), 
             'status' => $m['status'],
-            'maintenance' => $maintenance_history, // NOVO CAMPO
+            'maintenance' => $maintenance_history, 
             'history' => $history,
             'nextMaint' => $nextMaint
         ];
@@ -150,15 +161,15 @@ function handleAddMachine($pdo, $data) {
         throw new Exception('ID e Nome da máquina são obrigatórios.');
     }
     
-    // CORRIGIDO: Usando apenas as colunas que existem no seu DB (nome, tag, descricao, horas_uso, status)
+    // Usando as colunas que existem no seu DB (nome, tag, descricao, horas_uso, status)
     $stmt = $pdo->prepare("INSERT INTO maquinas (nome, tag, descricao, horas_uso, status) 
                           VALUES (:nome, :tag, :descricao, :horas_uso, :status)");
                           
     $stmt->execute([
         'nome' => $data['name'],
         'tag' => $data['id'],
-        'descricao' => isset($data['capacity']) ? $data['capacity'] : null, // Mapeado capacity do JS para descricao do DB
-        'horas_uso' => isset($data['quantity']) ? $data['quantity'] : 1, // Mapeado quantity do JS para horas_uso do DB
+        'descricao' => isset($data['capacity']) ? $data['capacity'] : null, 
+        'horas_uso' => isset($data['quantity']) ? $data['quantity'] : 1, 
         'status' => isset($data['status']) ? $data['status'] : 'OK'
     ]);
     
@@ -189,15 +200,15 @@ function handleUpdateField($pdo, $tag, $field, $value) {
     // Mapeamento de campo JS para campo DB
     $db_field = $field;
     if ($field === 'name') $db_field = 'nome';
-    if ($field === 'capacity') $db_field = 'descricao'; // Mapeando capacity para descricao
-    if ($field === 'quantity') $db_field = 'horas_uso'; // Mapeando quantity para horas_uso
-    if ($field === 'manufacturer') $db_field = 'descricao'; // Não temos fabricante, usa descricao
+    if ($field === 'capacity') $db_field = 'descricao'; 
+    if ($field === 'quantity') $db_field = 'horas_uso'; 
+    if ($field === 'manufacturer') $db_field = 'descricao'; 
     if ($field === 'status') $db_field = 'status';
 
     $allowed_fields = ['nome', 'descricao', 'horas_uso', 'status'];
 
     if (!in_array($db_field, $allowed_fields)) {
-        // Exceção especial para 'nextMaint'
+        // Exceção especial para 'nextMaint' (Agendamento)
         if ($field === 'nextMaint') {
              // 1. Encontra o ID interno da máquina pela TAG
             $stmt = $pdo->prepare("SELECT id FROM maquinas WHERE tag = ?");
@@ -208,7 +219,7 @@ function handleUpdateField($pdo, $tag, $field, $value) {
                 throw new Exception('Máquina não encontrada para agendamento.');
             }
 
-            // Deleta agendamentos existentes (ou onde value é null)
+            // Deleta agendamentos existentes
             $pdo->prepare("DELETE FROM agendamentos WHERE maquina_id = ?")->execute([$maquina_id]);
 
             if ($value && $value !== 'null') {
@@ -237,6 +248,8 @@ function handleUpdateField($pdo, $tag, $field, $value) {
 }
 
 function handleDeleteMachine($pdo, $tag) {
+    // É recomendado deletar dependências (historico, agendamentos, manutencoes) primeiro, 
+    // ou usar ON DELETE CASCADE no DB. Aqui, só deleta a máquina.
     $stmt = $pdo->prepare("DELETE FROM maquinas WHERE tag = ?");
     $stmt->execute([$tag]);
 
@@ -244,10 +257,15 @@ function handleDeleteMachine($pdo, $tag) {
 }
 
 // =========================================================================
-// FUNÇÕES DE MANUTENÇÃO (CORRIGIDAS PARA SEU DB)
+// FUNÇÕES DE MANUTENÇÃO
 // =========================================================================
 
 function handleStartMaintenance($pdo, $data) {
+    // Requer: tag, type, desc, start_date
+    if (empty($data['tag']) || empty($data['type'])) {
+        throw new Exception('Tag e Tipo da manutenção são obrigatórios.');
+    }
+    
     // 1. Encontra o ID interno da máquina pela TAG
     $stmt = $pdo->prepare("SELECT id FROM maquinas WHERE tag = ?");
     $stmt->execute([$data['tag']]);
@@ -257,7 +275,7 @@ function handleStartMaintenance($pdo, $data) {
         throw new Exception('Máquina não encontrada.');
     }
     
-    // 2. Registra o início da manutenção (seu DB não tem data de fim, então registra a data de início como data_servico)
+    // 2. Registra o início da manutenção (data_fim será NULL por padrão)
     $stmt = $pdo->prepare("INSERT INTO manutencoes (maquina_id, data_servico, tipo_servico, observacoes) 
                           VALUES (?, ?, ?, ?)");
     $stmt->execute([
@@ -267,13 +285,40 @@ function handleStartMaintenance($pdo, $data) {
         $data['desc']
     ]);
     
-    // O JS cuidará de chamar a atualização de STATUS para 'EM MANUTENÇÃO' separadamente.
-    echo json_encode(['status' => 'success', 'message' => 'Manutenção iniciada.']);
+    // Retorna o ID da manutenção recém-criada para o JS, se necessário (opcional, mas bom)
+    $maint_id = $pdo->lastInsertId();
+    echo json_encode(['status' => 'success', 'message' => 'Manutenção iniciada.', 'maint_id' => $maint_id]);
 }
 
 function handleEndMaintenance($pdo, $data) {
-    // Sua tabela 'manutencoes' não tem um campo 'end_date' para ser atualizado, nem um ID para identificar a manutenção ATIVA.
-    // A lógica de "finalizar manutenção" será tratada apenas pelo JS, que chamará a atualização de status para 'OK'.
+    // Requer: tag, end_date, maint_id
+    if (empty($data['tag']) || empty($data['end_date']) || empty($data['maint_id'])) {
+        throw new Exception('Dados de finalização incompletos.');
+    }
+    
+    // 1. Encontra o ID interno da máquina pela TAG (para validação)
+    $stmt = $pdo->prepare("SELECT id FROM maquinas WHERE tag = ?");
+    $stmt->execute([$data['tag']]);
+    $maquina_id = $stmt->fetchColumn();
+
+    if (!$maquina_id) {
+        throw new Exception('Máquina não encontrada.');
+    }
+
+    // 2. Atualiza a coluna data_fim na tabela manutencoes usando o maint_id
+    $stmt = $pdo->prepare("UPDATE manutencoes SET data_fim = :end_date 
+                          WHERE id = :maint_id AND maquina_id = :maquina_id AND data_fim IS NULL");
+    
+    $stmt->execute([
+        'end_date' => $data['end_date'], 
+        'maint_id' => $data['maint_id'], 
+        'maquina_id' => $maquina_id
+    ]);
+    
+    if ($stmt->rowCount() === 0) {
+        throw new Exception('Nenhuma manutenção ativa encontrada com o ID fornecido.');
+    }
+    
     echo json_encode(['status' => 'success', 'message' => 'Manutenção finalizada.']);
 }
 
