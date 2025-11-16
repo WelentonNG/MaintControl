@@ -9,3 +9,4 @@ Main Control:
     ✔ Ao sair da tela cheia ele fica com o site bugado @started(25-11-02 13:13) @done(25-11-02 13:26) @lasted(13m52s)
     ✔ Tirar o escapeHTML do site @started(25-11-15 21:07) @done(25-11-15 21:10) @lasted(3m20s)
     ✔ Banco de dados não conectando @done(25-11-16 19:39)
+    ✔ Quando saio do tela cheia do grafico fica site bugado @started(25-11-16 19:46) @done(25-11-16 19:48) @lasted(2m19s)

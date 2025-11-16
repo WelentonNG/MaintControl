@@ -849,11 +849,12 @@ document.addEventListener('DOMContentLoaded', () => {
             if (isFullscreen) {
                 toggleChartIcon.classList.replace('fa-expand', 'fa-compress');
                 this.title = 'Sair da Tela Cheia';
+    
                 
             } else {
                 toggleChartIcon.classList.replace('fa-compress', 'fa-expand');
                 this.title = 'Tela Cheia';
-                // Recarregar o render() é uma forma robusta de reajustar o layout
+                window.location.reload();
                 render(); 
             }
 
