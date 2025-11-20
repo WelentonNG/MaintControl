@@ -92,7 +92,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     m.quantity = Number(m.quantity) || 1;
                     return m;
                 });
-                notify('Dados carregados do banco de dados.', 'info');
+                
             } else {
                  notify(`Erro ao carregar dados: ${data.message || 'Formato de dados inválido.'}`, 'error');
                  state.machines = [];
