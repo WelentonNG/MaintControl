@@ -746,3 +746,141 @@ tr.row:hover{
   background: linear-gradient(90deg, transparent, var(--border-color), transparent);
   margin: 24px 0;
 }
+
+
+/* ====== MEGA ATUALIZAÇÃO: ESTILOS ADICIONAIS ====== */
+
+/* 1. Modal de Confirmação Personalizado */
+.modal-confirm {
+  max-width: 450px;
+  text-align: center;
+}
+
+.modal-confirm .icon {
+  font-size: 40px;
+  margin-bottom: 15px;
+}
+.modal-confirm .icon.danger { color: var(--danger); }
+.modal-confirm .icon.warning { color: var(--warning); }
+
+.modal-confirm .btn-confirm {
+  background: var(--danger);
+  border-color: var(--danger);
+}
+.modal-confirm .btn-confirm:hover {
+  background: var(--danger-light);
+  border-color: var(--danger-light);
+}
+
+/* 2. Loader e Estado Vazio para a Tabela */
+.table-wrap {
+  /* Posição relativa para o overlay */
+  position: relative;
+  min-height: 300px; /* Garante altura mínima durante o load */
+}
+
+#table-overlay {
+  position: absolute;
+  inset: 0;
+  background: color-mix(in srgb, var(--card) 80%, transparent);
+  backdrop-filter: blur(2px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  border-radius: var(--border-radius);
+  transition: var(--transition);
+  opacity: 1;
+  visibility: visible;
+}
+
+#table-overlay.hidden {
+  opacity: 0;
+  visibility: hidden;
+}
+
+/* Animação do Spinner (reutilizada do seu .spinner) */
+.loader-spinner {
+  display: inline-block;
+  width: 48px;
+  height: 48px;
+  border: 4px solid var(--primary);
+  border-radius: 50%;
+  border-top-color: transparent;
+  animation: spin 1s ease-in-out infinite;
+}
+
+/* Re-usando sua animação spin */
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.empty-state {
+  text-align: center;
+  padding: 30px;
+  color: var(--muted);
+}
+.empty-state i {
+  font-size: 50px;
+  margin-bottom: 15px;
+  color: var(--primary);
+}
+.empty-state h4 {
+  color: var(--text);
+  margin-bottom: 5px;
+}
+
+/* 3. Badge de Alerta de Manutenção */
+.maint-alert-badge {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  margin-right: 8px;
+  vertical-align: middle;
+  box-shadow: 0 0 8px var(--color);
+  animation: pulse 1.5s infinite;
+  flex-shrink: 0;
+}
+.maint-alert-badge.danger {
+  --color: var(--danger);
+  background-color: var(--danger);
+}
+.maint-alert-badge.warning {
+  --color: var(--warning);
+  background-color: var(--warning);
+}
+
+@keyframes pulse {
+  0% { transform: scale(0.9); box-shadow: 0 0 0 0px var(--color); }
+  70% { transform: scale(1); box-shadow: 0 0 0 8px transparent; }
+  100% { transform: scale(0.9); box-shadow: 0 0 0 0px transparent; }
+}
+
+/* 4. Alerta no Modal */
+.modal-alert {
+  padding: 15px;
+  border-radius: var(--border-radius);
+  margin-bottom: 16px;
+  display: none; /* Oculto por padrão */
+  font-weight: 600;
+  border: 1px solid var(--color);
+}
+.modal-alert.danger {
+  display: block;
+  --color: var(--danger);
+  background: color-mix(in srgb, var(--danger) 15%, transparent);
+  color: var(--danger-light);
+}
+.modal-alert.warning {
+  display: block;
+  --color: var(--warning);
+  background: color-mix(in srgb, var(--warning) 15%, transparent);
+  color: var(--warning-light);
+}
+
+/* 5. Dashboard Interativo */
+.metric {
+  cursor: pointer; /* Indica que é clicável */
+}

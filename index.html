@@ -36,6 +36,9 @@
             </div>
 
             <div class="table-wrap">
+              <div id="table-overlay" class="hidden">
+                <div class="loader-spinner"></div>
+              </div>
               <table id="machinesTable">
                 <thead>
                   <tr>
@@ -112,15 +115,33 @@
           <div class="panel">
             <h3 style="margin-top:0">Métricas Rápidas</h3>
             <div class="metrics">
-              <div class="metric"><div class="small">Total</div><div id="metricTotal" style="font-weight:800;font-size:20px">0</div></div>
-              <div class="metric"><div class="small">Em Operação</div><div id="metricOp" style="font-weight:800;font-size:20px">0</div></div>
-              <div class="metric"><div class="small">Em Manutenção</div><div id="metricMaint" style="font-weight:800;font-size:20px">0</div></div>
-              <div class="metric"><div class="small">Inoperantes</div><div id="metricInop" style="font-weight:800;font-size:20px">0</div></div>
-              <div class="metric"><div class="small">Próx. Maint. (30D)</div><div id="metricNextMaint" style="font-weight:800;font-size:20px">0</div></div>
-              <div class="metric"><div class="small">Qtd Total</div><div id="metricQtyTotal" style="font-weight:800;font-size:20px">0</div></div>
+              <div class="metric" id="metricTotal" title="Filtrar: Todos">
+                <div class="small"><i class="fa-solid fa-boxes-stacked"></i> Total</div>
+                <div id="metricTotalDisplay" style="font-weight:800;font-size:20px">0</div>
+              </div>
+              <div class="metric" id="metricOp" title="Filtrar: Em Operação">
+                <div class="small"><i class="fa-solid fa-circle-play"></i> Em Operação</div>
+                <div id="metricOpDisplay" style="font-weight:800;font-size:20px">0</div>
+              </div>
+              <div class="metric" id="metricMaint" title="Filtrar: Em Manutenção">
+                <div class="small"><i class="fa-solid fa-screwdriver-wrench"></i> Em Manutenção</div>
+                <div id="metricMaintDisplay" style="font-weight:800;font-size:20px">0</div>
+              </div>
+              <div class="metric" id="metricInop" title="Filtrar: Inoperantes">
+                <div class="small"><i class="fa-solid fa-circle-xmark"></i> Inoperantes</div>
+                <div id="metricInopDisplay" style="font-weight:800;font-size:20px">0</div>
+              </div>
+              <div class="metric" id="metricNextMaint" title="Ver máquinas com agendamento">
+                <div class="small"><i class="fa-solid fa-calendar-check"></i> Próx. Maint. (30D)</div>
+                <div id="metricNextMaintDisplay" style="font-weight:800;font-size:20px">0</div>
+              </div>
+              <div class="metric" id="metricQtyTotal" title="Quantidade total de unidades">
+                <div class="small"><i class="fa-solid fa-plus-minus"></i> Qtd Total</div>
+                <div id="metricQtyTotalDisplay" style="font-weight:800;font-size:20px">0</div>
+              </div>
             </div>
           </div>
-        </aside>
+          </aside>
       </div>
 
       <div id="modalBackdrop" class="modal-backdrop">
@@ -133,6 +154,7 @@
             </div>
           </div>
 
+          <div id="modalAlert" class="modal-alert"></div>
           <div class="tabs" style="margin-top:12px">
             <button class="tab active" data-tab="view"><i class="fa-solid fa-circle-info"></i> Visualizar</button>
             <button class="tab" data-tab="maintenance"><i class="fa-solid fa-screwdriver-wrench"></i> Manutenção</button>
@@ -187,6 +209,19 @@
       <div class="toasts" id="toasts"></div>
     </div>
 
+    <div id="confirmModalBackdrop" class="modal-backdrop">
+      <div class="modal modal-confirm">
+        <div id="confirmIcon" class="icon danger">
+          <i class="fa-solid fa-triangle-exclamation"></i>
+        </div>
+        <h3 id="confirmTitle" style="margin-top:0">Excluir Item?</h3>
+        <p id="confirmMessage" style="color:var(--muted)">Tem certeza que deseja excluir este item? Esta ação não pode ser desfeita.</p>
+        <div style="display:flex;gap:12px;justify-content:center;margin-top:20px">
+          <button id="confirmBtnCancel" class="btn secondary">Cancelar</button>
+          <button id="confirmBtnOk" class="btn btn-confirm">Sim, Excluir</button>
+        </div>
+      </div>
+    </div>
     <script src="script.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
