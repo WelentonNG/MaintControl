@@ -34,6 +34,8 @@ try {
                 handleAddHistory($pdo, $input['data']);
             } elseif ($action === 'start_maintenance') {
                 handleStartMaintenance($pdo, $input['data']);
+            } elseif ($action === 'batch_add_machines') { // <-- NOVO PONTO DE ENTRADA
+                handleBatchAddMachines($pdo, $input['data']);
             } else {
                 throw new Exception('Ação POST desconhecida.');
             }
@@ -320,6 +322,54 @@ function handleEndMaintenance($pdo, $data) {
     }
     
     echo json_encode(['status' => 'success', 'message' => 'Manutenção finalizada.']);
+}
+
+// =========================================================================
+// FUNÇÃO DE IMPORTAÇÃO EM LOTE (NOVA)
+// =========================================================================
+function handleBatchAddMachines($pdo, $machines) {
+    if (!is_array($machines) || empty($machines)) {
+        throw new Exception('Nenhum dado de máquina válido fornecido.');
+    }
+
+    // Prepara a query uma vez.
+    // ON DUPLICATE KEY UPDATE: Se a 'tag' (que deve ser UNIQUE) já existir,
+    // ele atualiza os campos em vez de dar erro.
+    $stmt = $pdo->prepare("INSERT INTO maquinas (nome, tag, descricao, horas_uso, status) 
+                          VALUES (:nome, :tag, :descricao, :horas_uso, :status)
+                          ON DUPLICATE KEY UPDATE 
+                          nome = VALUES(nome), 
+                          descricao = VALUES(descricao), 
+                          horas_uso = VALUES(horas_uso), 
+                          status = VALUES(status)");
+    
+    $count = 0;
+    // Usa uma transação para garantir que ou tudo ou nada seja salvo
+    $pdo->beginTransaction();
+    try {
+        foreach ($machines as $data) {
+            // Validação mínima (o 'id' do JSON é o 'tag' do DB)
+            if (empty($data['id']) || empty($data['name'])) {
+                // Pula esta máquina, mas não para a transação
+                continue; 
+            }
+
+            $stmt->execute([
+                'nome' => $data['name'],
+                'tag' => $data['id'],
+                'descricao' => isset($data['capacity']) ? $data['capacity'] : null, 
+                'horas_uso' => isset($data['quantity']) ? (int)$data['quantity'] : 1, 
+                'status' => isset($data['status']) ? $data['status'] : 'OK'
+            ]);
+            $count++;
+        }
+        $pdo->commit();
+        echo json_encode(['status' => 'success', 'message' => "$count máquinas importadas/atualizadas com sucesso."]);
+
+    } catch (Exception $e) {
+        $pdo->rollBack();
+        throw $e; // Relança a exceção para ser pega pelo handler principal
+    }
 }
 
 ?>

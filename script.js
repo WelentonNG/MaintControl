@@ -1039,34 +1039,71 @@ document.addEventListener('DOMContentLoaded', () => {
             notify('Dados exportados.', 'info');
         });
 
-        // Importação de JSON
+        // =================================================================
+        // INÍCIO DA ALTERAÇÃO: Importação de JSON
+        // =================================================================
         const importFile = document.getElementById('importFile');
         document.getElementById('importBtn').addEventListener('click', () => importFile.click());
+        
         importFile.addEventListener('change', e => {
             const file = e.target.files[0];
             if (!file) return;
             const reader = new FileReader();
-            reader.onload = ev => {
+            
+            // Tornamos o onload assíncrono para usar await
+            reader.onload = async (ev) => {
                 try {
                     const importedMachines = JSON.parse(ev.target.result);
                     if (!Array.isArray(importedMachines)) throw new Error("O arquivo não contém um array JSON.");
-                    if (confirm(`Isso irá carregar ${importedMachines.length} máquinas. Para salvar no banco de dados, você precisará reenviar uma por uma.`)) {
-                        state.machines = importedMachines.map(m => {
+
+                    // Mensagem de confirmação atualizada
+                    if (confirm(`Deseja importar e salvar ${importedMachines.length} máquinas no banco de dados? (IDs existentes serão atualizados)`)) {
+                        
+                        // Normaliza os dados para garantir que campos essenciais existam
+                        const machinesToSave = importedMachines.map(m => {
                             m.maintenance = m.maintenance || [];
                             m.history = m.history || [];
                             m.nextMaint = m.nextMaint || null;
+                            m.id = m.id || `import_${Date.now()}`;
+                            m.name = m.name || 'Sem Nome';
+                            m.status = m.status || 'OK';
+                            m.quantity = Number(m.quantity) || 1;
                             return m;
                         });
-                        render();
-                        notify('Dados carregados na interface. Use "Adicionar" para salvar no DB.', 'warning');
+
+                        // Mostra um spinner de carregamento
+                        DOMElements.tableOverlay.innerHTML = '<div class="loader-spinner"></div><p>Importando dados...</p>';
+                        DOMElements.tableOverlay.classList.remove('hidden');
+
+                        try {
+                            // CHAMA A NOVA AÇÃO DA API
+                            const response = await sendApiRequest(API_URL, 'POST', {
+                                action: 'batch_add_machines',
+                                data: machinesToSave
+                            });
+                            
+                            notify(response.message, 'success'); // Ex: "15 máquinas importadas..."
+                            
+                            // RECARREGA TUDO DO BANCO DE DADOS
+                            await loadState(); 
+                            render(); // Renderiza a tabela com os novos dados
+                            
+                        } catch (apiError) {
+                            // O erro da API já é notificado por sendApiRequest
+                            // Apenas esconde o overlay
+                            DOMElements.tableOverlay.classList.add('hidden');
+                        }
                     }
                 } catch (err) {
                     notify('Arquivo JSON inválido ou corrompido.', 'error');
                 }
             };
             reader.readAsText(file);
-            e.target.value = '';
+            e.target.value = ''; // Limpa o input para permitir reimportar o mesmo arquivo
         });
+        // =================================================================
+        // FIM DA ALTERAÇÃO
+        // =================================================================
         
         document.getElementById('toggleTheme').addEventListener('click', () => {
             const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
