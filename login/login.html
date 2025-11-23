@@ -9,7 +9,6 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
-  <!-- Efeitos visuais de fundo -->
   <div class="floating-shapes">
     <div class="shape"></div>
     <div class="shape"></div>
@@ -17,14 +16,12 @@
     <div class="shape"></div>
   </div>
 
-  <!-- Botão de alternância de tema -->
   <div class="theme-toggle" id="toggleTheme" title="Alterar Tema">
     <i class="fa-solid fa-moon"></i>
   </div>
 
-  <!-- Container principal -->
   <div class="login-container">
-    <div class="login-card">
+    <div class="login-card" id="loginCard">
       <div class="login-header">
         <div class="login-logo">
           <i class="fa-solid fa-gears"></i>
@@ -40,10 +37,7 @@
             <input type="text" id="username" class="form-input" placeholder="Digite seu usuário" required>
             <i class="fa-solid fa-user"></i>
           </div>
-          <div class="validation-message" id="usernameValidation">
-            <i class="fa-solid fa-circle-check"></i>
-            <span>Usuário válido</span>
-          </div>
+          <div class="validation-message" id="usernameValidation"></div>
         </div>
 
         <div class="form-group">
@@ -55,10 +49,7 @@
               <i class="fa-solid fa-eye"></i>
             </button>
           </div>
-          <div class="validation-message" id="passwordValidation">
-            <i class="fa-solid fa-circle-check"></i>
-            <span>Senha válida</span>
-          </div>
+          <div class="validation-message" id="passwordValidation"></div>
         </div>
 
         <div class="login-options">
@@ -66,7 +57,7 @@
             <input type="checkbox" id="rememberMe">
             <span>Lembrar-me</span>
           </label>
-          <a href="#" class="forgot-password">Esqueceu a senha?</a>
+          <a href="forgot-password.html" class="forgot-password">Esqueceu a senha?</a>
         </div>
 
         <button type="submit" class="login-button" id="loginButton">
@@ -76,7 +67,7 @@
       </form>
 
       <div class="login-footer">
-        <p>Não tem uma conta? <a href="#">Solicitar acesso</a></p>
+        <p>Não tem uma conta? <a href="request-access.html">Solicitar acesso</a></p>
       </div>
     </div>
   </div>
