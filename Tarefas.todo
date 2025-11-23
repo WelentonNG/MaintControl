@@ -1,5 +1,6 @@
 Main Control:
     ✔ Cria um painel FullScream para o grafico para que ele fique em tela cheia @low @started(25-11-02 10:04) @done(25-11-02 10:34) @lasted(30m20s)
+    ✔ Tem que amarrar os arquivos de esqueceu_senha & solicitar_acesso esta sem css e theme.js @started(25-11-23 19:49) @done(25-11-23 19:55) @lasted(6m33s)
     ☐ Arrumar o banco de dados não esta com todas as maquinas @critical 
     ☐ Problema em colocar maquinas no propio site @critical
     ☐ Fabricante esta junto com capacidade 
