@@ -101,7 +101,7 @@
           
           // Redirecionar para a página principal após login bem-sucedido
           window.location.href = '../index.html';
-        }, 1500);
+        }, 0);
       }
     });
     
