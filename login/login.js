@@ -114,11 +114,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Simular requisição de API
     setTimeout(() => {
-      // Aqui você faria a chamada real para sua API de autenticação
-      // Por enquanto, vamos apenas simular um login bem-sucedido
-      
-      // Redirecionar para a página principal após login bem-sucedido
-      // window.location.href = '../index.html';
+          
       alert('Login bem-sucedido! (Simulação)');
       
       // Re-abilitar botão (para fins de teste, já que não estamos redirecionando)
