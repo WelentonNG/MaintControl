@@ -24,10 +24,8 @@ document.addEventListener('DOMContentLoaded', () => {
         setTimeout(() => d.remove(), 3500);
     };
 
-    // FUNÇÃO QUE ESTAVA FALTANDO, ADICIONADA AQUI
     const escapeHtml = (str) => {
         if (str === null || str === undefined) return '';
-        // Converte para String e então escapa os caracteres
         return String(str).replace(/[&<>"']/g, (match) => {
             const escape = {
                 '&': '&amp;',
@@ -40,7 +38,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     };
 
-    // Função genérica para comunicação com a API PHP
     const sendApiRequest = async (url, method, data = null) => {
         const options = {
             method,
@@ -86,19 +83,18 @@ document.addEventListener('DOMContentLoaded', () => {
         confirmModal.message.textContent = message;
         confirmModal.onConfirm = onConfirm;
 
-        // Resetar classes
         confirmModal.icon.className = 'icon';
         confirmModal.btnOk.className = 'btn';
 
         if (type === 'danger') {
             confirmModal.icon.classList.add('danger');
             confirmModal.icon.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i>';
-            confirmModal.btnOk.classList.add('btn-confirm'); // Estilo vermelho
+            confirmModal.btnOk.classList.add('btn-confirm'); 
             confirmModal.btnOk.textContent = 'Sim, Excluir';
         } else if (type === 'warning') {
             confirmModal.icon.classList.add('warning');
             confirmModal.icon.innerHTML = '<i class="fa-solid fa-question-circle"></i>';
-            confirmModal.btnOk.classList.add('btn'); // Estilo padrão azul
+            confirmModal.btnOk.classList.add('btn'); 
             confirmModal.btnOk.textContent = 'Sim, Iniciar';
         }
 
@@ -110,7 +106,6 @@ document.addEventListener('DOMContentLoaded', () => {
         confirmModal.onConfirm = null;
     };
 
-    // Listeners do Modal de Confirmação
     confirmModal.btnOk.addEventListener('click', () => {
         if (confirmModal.onConfirm) {
             confirmModal.onConfirm();
@@ -124,7 +119,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
     // ======== FUNÇÕES DE DADOS (CARREGAR/SALVAR) ========
-    const loadState = async () => { // AGORA É ASSÍNCRONA E CARREGA DO DB VIA API
+    const loadState = async () => { 
         DOMElements.tableOverlay.innerHTML = '<div class="loader-spinner"></div><p>Carregando dados...</p>';
         DOMElements.tableOverlay.classList.remove('hidden');
         
@@ -133,18 +128,17 @@ document.addEventListener('DOMContentLoaded', () => {
             
             if (data.status === 'success' && Array.isArray(data.machines)) {
                 state.machines = data.machines.map(m => {
-                    // Garante que todas as propriedades do JS existam
                     m.maintenance = m.maintenance || [];
-                    // CORREÇÃO: Garante que os passos (steps) dentro de CADA manutenção existam.
                     m.maintenance = m.maintenance.map(maint => {
                         maint.steps = maint.steps || [];
-                        // O ID agora vem do DB, mas se faltar, cria um placeholder
                         maint.id = maint.id || Date.now(); 
+                        maint.tecnico = maint.tecnico || 'N/A'; // NOVO
+                        maint.cost = maint.cost || null; // NOVO
                         return maint;
                     });
                     m.history = m.history || [];
                     m.nextMaint = m.nextMaint || null;
-                    m.quantity = Number(m.quantity) || 1;
+                    m.quantity = Number(m.quantity) || 0; // 'quantity' agora é 'horas_uso', 0 é um valor inicial válido
                     return m;
                 });
                 
@@ -172,7 +166,6 @@ document.addEventListener('DOMContentLoaded', () => {
         
         try {
             await sendApiRequest(API_URL, 'PUT', apiData);
-            // Atualiza o estado local apenas após o sucesso da API
             machine[field] = value; 
             return true;
         } catch (e) {
@@ -189,9 +182,8 @@ document.addEventListener('DOMContentLoaded', () => {
         };
         
         try {
-            await sendApiRequest(API_URL, 'POST', { action: 'add_history', data: historyEntry });
+            const response = await sendApiRequest(API_URL, 'POST', { action: 'add_history', data: historyEntry });
             machine.history = machine.history || [];
-            // Adiciona ao histórico local com a data/hora atual, formatado para o BR
             machine.history.push({ date: new Date().toLocaleString('pt-BR'), text });
         } catch (e) {
             console.error("Falha ao salvar histórico:", e);
@@ -201,10 +193,9 @@ document.addEventListener('DOMContentLoaded', () => {
     // ======== LÓGICA DE ALERTA DE MANUTENÇÃO ========
     const getMaintAlertStatus = (machine) => {
         if (!machine.nextMaint || !machine.nextMaint.date) {
-            return null; // Sem agendamento
+            return null; 
         }
         
-        // Pega a data de hoje (YYYY-MM-DD) no fuso horário local
         const today = new Date();
         today.setMinutes(today.getMinutes() - today.getTimezoneOffset());
         const todayStr = today.toISOString().slice(0, 10);
@@ -217,13 +208,13 @@ document.addEventListener('DOMContentLoaded', () => {
         if (maintDate === todayStr) {
             return { type: 'warning', text: 'Manutenção agendada para HOJE.' };
         }
-        return null; // Agendamento futuro
+        return null; 
     };
 
-    // ======== REFERÊNCIAS DO DOM ========
+    // ======== REFERÊNCIAS DO DOM (ATUALIZADAS) ========
     const DOMElements = {
         tbody: document.querySelector('#machinesTable tbody'),
-        tableOverlay: document.getElementById('table-overlay'), // NOVO
+        tableOverlay: document.getElementById('table-overlay'), 
         searchEl: document.getElementById('search'),
         filterEl: document.getElementById('filterStatus'),
         totalCount: document.getElementById('totalCount'),
@@ -234,12 +225,14 @@ document.addEventListener('DOMContentLoaded', () => {
         metricInop: document.getElementById('metricInopDisplay'),
         metricNextMaint: document.getElementById('metricNextMaintDisplay'),
         metricQtyTotal: document.getElementById('metricQtyTotalDisplay'),
+        metricActiveMaint: document.getElementById('metricActiveMaintDisplay'), // NOVO
+        metricDoneMaint: document.getElementById('metricDoneMaintDisplay'), // NOVO
         // Fim Métricas
         pager: document.getElementById('pager'),
         showingRange: document.getElementById('showingRange'),
         backdrop: document.getElementById('modalBackdrop'),
         modalTitle: document.getElementById('modalTitle'),
-        modalAlert: document.getElementById('modalAlert'), // NOVO
+        modalAlert: document.getElementById('modalAlert'), 
         mId: document.getElementById('mId'),
         mName: document.getElementById('mName'),
         mCap: document.getElementById('mCap'),
@@ -272,7 +265,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const pagedItems = processedItems.slice(start, start + state.perPage);
 
         renderTable(pagedItems);
-        updateMetrics();
+        updateMetrics(); // ATUALIZADO
         renderPager(pages);
         updateShowingRange(total, start, pagedItems.length);
         renderChart();
@@ -287,6 +280,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 return ['id', 'name', 'manufacturer'].some(field => (m[field] || '').toLowerCase().includes(q));
             })
             .sort((a, b) => {
+                // ATUALIZADO: 'quantity' (horas) agora é numérico
+                if (state.sortBy === 'quantity') {
+                    const A = a.quantity || 0;
+                    const B = b.quantity || 0;
+                    return state.sortDir === 'asc' ? A - B : B - A;
+                }
                 const A = (a[state.sortBy] || '').toString().toLowerCase();
                 const B = (b[state.sortBy] || '').toString().toLowerCase();
                 if (A < B) return state.sortDir === 'asc' ? -1 : 1;
@@ -299,7 +298,6 @@ document.addEventListener('DOMContentLoaded', () => {
         DOMElements.tbody.innerHTML = '';
         
         if (items.length === 0) {
-            // Mostra o estado vazio
             const emptyIcon = state.filter !== 'all' || state.search ? 'fa-solid fa-magnifying-glass' : 'fa-solid fa-box-open';
             const emptyTitle = state.filter !== 'all' || state.search ? 'Nenhum Resultado' : 'Nenhuma Máquina';
             const emptyText = state.filter !== 'all' || state.search ? 'Tente ajustar sua busca ou filtros.' : 'Adicione sua primeira máquina no painel ao lado.';
@@ -315,7 +313,6 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        // Esconde o overlay se tivermos itens
         DOMElements.tableOverlay.classList.add('hidden');
         
         items.forEach(m => {
@@ -323,13 +320,13 @@ document.addEventListener('DOMContentLoaded', () => {
             const tr = document.createElement('tr');
             tr.className = 'row';
 
-            // Verifica Alerta de Manutenção
             const alertStatus = getMaintAlertStatus(m);
             let alertBadgeHTML = '';
             if (alertStatus) {
                 alertBadgeHTML = `<span class="maint-alert-badge ${alertStatus.type}" title="${alertStatus.text}"></span>`;
             }
 
+            // ATUALIZADO: 'quantity' (Horas de Uso) agora não tem botões +/- e é um campo editável
             tr.innerHTML = `
                 <td>${escapeHtml(m.id)}</td>
                 <td contenteditable="true" data-field="name" data-idx="${indexInState}" class="editable" style="display:flex; align-items:center;">
@@ -338,11 +335,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 </td>
                 <td contenteditable="true" data-field="capacity" data-idx="${indexInState}" class="editable">${escapeHtml(m.capacity || '')}</td>
                 <td contenteditable="true" data-field="manufacturer" data-idx="${indexInState}" class="editable">${escapeHtml(m.manufacturer || '')}</td>
-                <td style="display:flex;gap:4px;align-items:center;">
-                    <button class="btn secondary btn-qty-dec" data-idx="${indexInState}" title="Diminuir Qtd" style="padding: 6px; font-size:12px;"><i class="fa-solid fa-minus"></i></button>
-                    <input data-idx="${indexInState}" data-field="quantity" type="number" min="1" value="${m.quantity}" style="width:50px;padding: 6px;text-align:center;"/>
-                    <button class="btn secondary btn-qty-inc" data-idx="${indexInState}" title="Aumentar Qtd" style="padding: 6px; font-size:12px;"><i class="fa-solid fa-plus"></i></button>
+                
+                <td contenteditable="true" data-field="quantity" data-idx="${indexInState}" class="editable" title="Horas de Uso. Clique para editar ou use o modal.">
+                    ${m.quantity}
                 </td>
+                
                 <td><select data-idx="${indexInState}" class="statusSel">${STATUS.map(s => `<option value="${s}" ${m.status === s ? 'selected' : ''}>${s}</option>`).join('')}</select></td>
                 <td class="actions">
                     <button class="btn secondary btn-view" data-idx="${indexInState}" title="Ver Detalhes"><i class="fa-solid fa-eye"></i></button>
@@ -354,24 +351,42 @@ document.addEventListener('DOMContentLoaded', () => {
         addDynamicTableEventListeners();
     };
 
+    // FUNÇÃO DE MÉTRICAS ATUALIZADA
     const updateMetrics = () => {
         const total = state.machines.length;
         const qtyTotal = state.machines.reduce((acc, m) => acc + (m.quantity || 0), 0);
         
-        // Pega a data de hoje e data daqui a 30 dias (ignorando fuso)
         const today = new Date();
         today.setMinutes(today.getMinutes() - today.getTimezoneOffset());
         const todayStr = today.toISOString().slice(0, 10);
         
-        const next30Days = new Date(today.setDate(today.getDate() + 30));
+        const date30DaysAgo = new Date(new Date().setDate(today.getDate() - 30));
+        const date30DaysAgoStr = date30DaysAgo.toISOString().slice(0, 10);
+        
+        const next30Days = new Date(new Date().setDate(today.getDate() + 30));
         const next30DaysStr = next30Days.toISOString().slice(0, 10);
 
-        const upcomingMaint = state.machines.filter(m => {
-            if (!m.nextMaint || !m.nextMaint.date) return false;
-            const maintDate = m.nextMaint.date;
-            // Verifica se a manutenção está entre hoje e os próximos 30 dias
-            return maintDate >= todayStr && maintDate <= next30DaysStr;
-        }).length;
+        let upcomingMaint = 0;
+        let activeMaintCount = 0; // NOVO
+        let completedLast30dCount = 0; // NOVO
+        
+        state.machines.forEach(m => {
+            // Conta agendamentos
+            if (m.nextMaint && m.nextMaint.date) {
+                const maintDate = m.nextMaint.date;
+                if (maintDate >= todayStr && maintDate <= next30DaysStr) {
+                    upcomingMaint++;
+                }
+            }
+            // Conta manutenções
+            (m.maintenance || []).forEach(maint => {
+                if (!maint.end_date) {
+                    activeMaintCount++; // Contagem de ativas
+                } else if (maint.end_date >= date30DaysAgoStr) {
+                    completedLast30dCount++; // Contagem de concluídas
+                }
+            });
+        });
 
         DOMElements.totalCount.textContent = total;
         DOMElements.metricTotal.textContent = total;
@@ -380,7 +395,10 @@ document.addEventListener('DOMContentLoaded', () => {
         DOMElements.metricInop.textContent = state.machines.filter(m => m.status === 'INOPERANTE').length;
         DOMElements.metricQtyTotal.textContent = qtyTotal;
         DOMElements.metricNextMaint.textContent = upcomingMaint;
+        DOMElements.metricActiveMaint.textContent = activeMaintCount; // NOVO
+        DOMElements.metricDoneMaint.textContent = completedLast30dCount; // NOVO
     };
+
 
     const renderPager = (pages) => {
         DOMElements.pager.innerHTML = '';
@@ -400,17 +418,15 @@ document.addEventListener('DOMContentLoaded', () => {
         DOMElements.showingRange.innerHTML = `<b>${startNum}-${endNum}</b> de <b>${total}</b>`;
     };
 
-    // ======== LÓGICA DO MODAL ========
+    // ======== LÓGICA DO MODAL (ATUALIZADA) ========
     const openModal = (index) => {
         state.editingIndex = Number(index);
         const m = state.machines[index];
         if (!m) return;
 
-        // Limpa alerta anterior
         DOMElements.modalAlert.style.display = 'none';
         DOMElements.modalAlert.className = 'modal-alert';
         
-        // Verifica se há um novo alerta
         const alertStatus = getMaintAlertStatus(m);
         if (alertStatus) {
             DOMElements.modalAlert.textContent = alertStatus.text;
@@ -423,7 +439,7 @@ document.addEventListener('DOMContentLoaded', () => {
         DOMElements.mName.textContent = m.name;
         DOMElements.mCap.textContent = m.capacity || '-';
         DOMElements.mFab.textContent = m.manufacturer || '-';
-        DOMElements.mQtd.textContent = m.quantity || 1;
+        DOMElements.mQtd.textContent = m.quantity || 0; // ATUALIZADO
         DOMElements.mStatus.textContent = m.status;
         DOMElements.mStatus.className = `pill ${getStatusClass(m.status)}`;
 
@@ -431,6 +447,34 @@ document.addEventListener('DOMContentLoaded', () => {
         renderMaintenanceTab();
         renderHistoryTab();
         renderScheduleTab();
+
+        // NOVO: Adiciona listener para o formulário de horas
+        document.getElementById('logHoursForm').onsubmit = async (e) => {
+            e.preventDefault();
+            const hoursInput = document.getElementById('hoursToAdd');
+            const reasonInput = document.getElementById('hoursReason');
+            
+            const hoursToAdd = Number(hoursInput.value);
+            const reason = reasonInput.value.trim();
+
+            if (hoursToAdd <= 0 || !reason) {
+                notify('Informe horas válidas e um motivo.', 'error');
+                return;
+            }
+
+            const currentHours = m.quantity || 0;
+            const newHours = currentHours + hoursToAdd;
+
+            // Usa a função existente para atualizar o campo (quantity = horas_uso)
+            if (await updateMachineField(m, 'quantity', newHours)) {
+                await addHistory(m, `Registrado ${hoursToAdd}h de uso. Motivo: ${reason}. (Total: ${newHours}h)`);
+                notify('Horas registradas com sucesso!', 'success');
+                DOMElements.mQtd.textContent = newHours; // Atualiza o display no modal
+                hoursInput.value = 1;
+                reasonInput.value = '';
+                render(); // Atualiza a tabela principal e métricas
+            }
+        };
 
         DOMElements.backdrop.classList.add('show');
         document.querySelector('.tab[data-tab="view"]').click();
@@ -441,70 +485,135 @@ document.addEventListener('DOMContentLoaded', () => {
         state.editingIndex = null;
     };
 
-    // Renderiza a aba de Manutenção (com histórico de etapas)
+    // ====================================================================
+    // FUNÇÃO renderMaintenanceTab (TOTALMENTE REFORMULADA)
+    // ====================================================================
     const renderMaintenanceTab = () => {
         const machine = state.machines[state.editingIndex];
-        // Encontra a primeira manutenção que ainda NÃO tem data de fim (end_date é null)
-        const activeMaint = (machine.maintenance || []).find(m => !m.end_date);
+        const allMaintRecords = (machine.maintenance || []).sort((a, b) => new Date(b.start_date) - new Date(a.start_date)); // Ordena
+        
+        const activeMaint = allMaintRecords.find(m => !m.end_date);
+        const pastMaint = allMaintRecords.filter(m => m.end_date);
+        
         let content = '';
 
-        if (activeMaint) {
-            // Se houver manutenção ativa, exibe detalhes e formulário para novas etapas
-            content = `
-                <div style="background:var(--bg);padding:15px;border-radius:8px;margin-bottom:15px;">
-                    <p style="margin:0;font-weight:600;">Manutenção Ativa (${activeMaint.type})</p>
-                    <p class="small" style="margin:5px 0;">Início: ${formatDate(activeMaint.start_date)} | Descrição Inicial: ${escapeHtml(activeMaint.desc)}</p>
-                    <button id="endMaint" class="btn" data-maint-id="${activeMaint.id}"><i class="fa-solid fa-check"></i> Finalizar Manutenção</button>
-                </div>
-                
-                <h4>Etapas da Manutenção (${(activeMaint.steps || []).length})</h4>
-                <ul id="maintStepsList" style="list-style-type: none; padding: 0; max-height: 150px; overflow-y: auto;">
-                    ${(activeMaint.steps || []).map(s => 
-                        `<li><span class="small">${s.date}</span>: ${escapeHtml(s.description)}</li>`
-                    ).join('') || '<li>Nenhuma etapa registrada ainda.</li>'}
-                </ul>
+        // 1. Formulário de Iniciar Nova Manutenção (SÓ APARECE SE NÃO HOUVER ATIVA)
+        if (!activeMaint) {
+            content += `
+                <form id="maintFormNew">
+                    <h4><i class="fa-solid fa-plus-circle"></i> Iniciar Nova Manutenção</h4>
+                    <div class="add-form" style="grid-template-columns: 1fr 1fr; gap: 10px;">
+                        <div>
+                            <label>Tipo de intervenção</label>
+                            <select id="maintType"><option value="Preventiva">Preventiva</option><option value="Corretiva">Corretiva</option></select>
+                        </div>
+                        <div>
+                            <label>Técnico Responsável</label>
+                            <input id="maintTecnico" type="text" placeholder="Nome do técnico" required />
+                        </div>
+                        <div style="grid-column: 1 / -1;">
+                            <label>Data de Início</label>
+                            <input id="maintStartDate" type="date" value="${new Date().toISOString().slice(0, 10)}" required />
+                        </div>
+                        <div style="grid-column: 1 / -1;">
+                            <label>Descrição do Problema/Serviço</label>
+                            <textarea id="maintDesc" rows="2" placeholder="Descreva o que será feito..." required></textarea>
+                        </div>
+                    </div>
+                    <div style="display:flex;gap:8px;margin-top:12px">
+                        <button class="btn" type="submit"><i class="fa-solid fa-screwdriver-wrench"></i> Iniciar Manutenção</button>
+                    </div>
+                </form>
+                <div class="separator"></div>
+            `;
+        }
 
-                <form id="maintFormStep" style="margin-top:15px;">
+        // 2. Título do Histórico
+        content += `<h4>Histórico de Manutenções (${allMaintRecords.length})</h4>`;
+
+        // 3. Container do Accordion
+        content += '<div class="accordion-maint">';
+
+        // 4. Renderiza a Manutenção Ativa (se houver) - JÁ ABERTA
+        if (activeMaint) {
+            content += renderMaintAccordionItem(activeMaint, true);
+        }
+
+        // 5. Renderiza as Manutenções Passadas - FECHADAS
+        if (pastMaint.length > 0) {
+            pastMaint.forEach(maint => {
+                content += renderMaintAccordionItem(maint, false);
+            });
+        } else if (!activeMaint) {
+             content += '<p>Nenhum registro de manutenção encontrado.</p>';
+        }
+
+        content += '</div>'; // Fecha o accordion-maint
+
+        DOMElements.tabMaintenance.innerHTML = content;
+        addMaintenanceEventListeners(); // Anexa os listeners aos novos elementos
+    };
+
+    // FUNÇÃO AUXILIAR para construir cada item do Accordion
+    const renderMaintAccordionItem = (maint, isOpen) => {
+        const isActive = !maint.end_date;
+        const steps = maint.steps || [];
+        
+        // Formata o Custo
+        let costDisplay = 'N/A';
+        if (maint.cost !== null && maint.cost > 0) {
+            costDisplay = `R$ ${parseFloat(maint.cost).toFixed(2).replace('.', ',')}`;
+        } else if (isActive) {
+            costDisplay = 'Pendente';
+        }
+
+        return `
+        <details ${isOpen ? 'open' : ''}>
+            <summary>
+                <div>
+                    <strong>${maint.type}</strong> (${isActive ? 'Em Andamento' : 'Concluída'})
+                    <div class="small">${formatDate(maint.start_date)} ${maint.end_date ? ' - ' + formatDate(maint.end_date) : ''}</div>
+                </div>
+                ${isActive ? '<span class="pill maint" style="padding: 5px 10px; font-size: 10px;">ATIVA</span>' : ''}
+            </summary>
+            
+            <div class="maint-details-grid">
+                <p><strong>Descrição Inicial</strong> ${escapeHtml(maint.desc)}</p>
+                <p><strong>Técnico</strong> ${escapeHtml(maint.tecnico)}</p>
+                <p><strong>Custo Total</strong> ${costDisplay}</p>
+            </div>
+            
+            ${isActive ? `
+                <form id="maintFormStep" style="padding: 16px; border-top: 1px solid var(--border-color);">
                     <label>Adicionar Etapa/Ação</label>
                     <textarea id="stepDesc" rows="2" placeholder="Ex: Troca da Correia A30..." required></textarea>
                     <div style="display:flex;gap:8px;margin-top:12px">
                         <button class="btn secondary" type="submit"><i class="fa-solid fa-plus"></i> Registrar Etapa</button>
+                        <button id="endMaint" class="btn" type="button" data-maint-id="${maint.id}"><i class="fa-solid fa-check"></i> Finalizar Manutenção</button>
                     </div>
                 </form>
-                `;
-        } else {
-            // Se não houver, exibe o formulário para iniciar uma nova
-            content = `
-                <h4>Histórico de Manutenções (${(machine.maintenance || []).length})</h4>
-                 <ul style="list-style-type: none; padding: 0; max-height: 200px; overflow-y: auto; margin-bottom: 20px;">
-                    ${(machine.maintenance || []).map(m => 
-                        `<li style="margin-bottom: 10px; border-left: 3px solid var(--primary); padding-left: 10px;">
-                            <strong>${m.type}</strong>: ${escapeHtml(m.desc)} <br/>
-                            <span class="small">Início: ${formatDate(m.start_date)} | Fim: ${formatDate(m.end_date)}</span>
-                        </li>`
-                    ).join('') || '<li>Nenhuma manutenção registrada.</li>'}
-                </ul>
-                <form id="maintFormNew">
-                    <h4>Iniciar Nova Manutenção</h4>
-                    <label>Tipo de intervenção</label>
-                    <select id="maintType"><option value="Preventiva">Preventiva</option><option value="Corretiva">Corretiva</option></select>
-                    <label style="margin-top:8px">Data de Início</label>
-                    <input id="maintStartDate" type="date" value="${new Date().toISOString().slice(0, 10)}" required />
-                    <label style="margin-top:8px">Descrição do Problema/Serviço</label>
-                    <textarea id="maintDesc" rows="3" placeholder="Descreva o que será feito..." required></textarea>
-                    <div style="display:flex;gap:8px;margin-top:12px">
-                        <button class="btn" type="submit"><i class="fa-solid fa-screwdriver-wrench"></i> Iniciar Manutenção</button>
-                    </div>
-                </form>`;
-        }
-        DOMElements.tabMaintenance.innerHTML = content;
-        addMaintenanceEventListeners();
+            ` : ''}
+
+            <h5 style="padding: 16px 16px 0; margin:0; border-top: 1px solid var(--border-color);">Etapas Executadas (${steps.length})</h5>
+            <ul class="maint-steps-list">
+                ${steps.length > 0 ? steps.map(s => `
+                    <li>
+                        <span class="small">${s.date}</span>
+                        <p>${escapeHtml(s.description)}</p>
+                    </li>
+                `).join('') : '<li>Nenhuma etapa registrada.</li>'}
+            </ul>
+        </details>
+        `;
     };
+    // ====================================================================
+    // FIM DA REFORMULAÇÃO
+    // ====================================================================
+
 
     // Renderiza a aba de Agendamento
     const renderScheduleTab = () => {
         const machine = state.machines[state.editingIndex];
-        // Encontra os elementos dentro da aba de agendamento (DOM do HTML principal)
         const display = document.getElementById('nextMaintDisplay');
         const dateInput = document.getElementById('nextMaintDate');
         const descTextarea = document.getElementById('nextMaintDesc');
@@ -516,33 +625,30 @@ document.addEventListener('DOMContentLoaded', () => {
             display.innerHTML = `${formatDate(machine.nextMaint.date)} (${escapeHtml(machine.nextMaint.desc)})`;
             dateInput.value = machine.nextMaint.date;
             descTextarea.value = machine.nextMaint.desc;
-            startBtn.style.display = 'inline-flex'; // MOSTRA o botão "Iniciar"
+            startBtn.style.display = 'inline-flex'; 
         } else {
             display.textContent = 'N/A';
             dateInput.value = '';
             descTextarea.value = '';
-            startBtn.style.display = 'none'; // ESCONDE o botão "Iniciar"
+            startBtn.style.display = 'none'; 
         }
         
         scheduleForm.onsubmit = async (e) => { 
             e.preventDefault();
             const date = dateInput.value;
             const desc = descTextarea.value.trim();
-
             if (!date) {
                 notify('A data de agendamento é obrigatória.', 'error');
                 return;
             }
-
             const newMaint = { date, desc };
-
             if (await updateMachineField(machine, 'nextMaint', JSON.stringify(newMaint))) {
-                machine.nextMaint = newMaint; // Atualiza o estado local
+                machine.nextMaint = newMaint; 
                 await addHistory(machine, `Próxima manutenção agendada para: ${formatDate(date)}`);
                 notify('Agendamento salvo!', 'success');
-                renderScheduleTab(); // Recarrega a aba
-                render(); // Atualiza as métricas (ex: Próx. Maint.)
-                openModal(state.editingIndex); // Reabre o modal para mostrar o alerta, se houver
+                renderScheduleTab(); 
+                render(); 
+                openModal(state.editingIndex); 
             }
         };
 
@@ -550,16 +656,15 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!machine.nextMaint) return;
             
             if (await updateMachineField(machine, 'nextMaint', null)) {
-                machine.nextMaint = null; // Atualiza o estado local
+                machine.nextMaint = null; 
                 await addHistory(machine, `Agendamento de próxima manutenção cancelado.`);
                 notify('Agendamento cancelado.', 'info');
-                renderScheduleTab(); // Recarrega a aba
-                render(); // Atualiza as métricas
-                openModal(state.editingIndex); // Reabre o modal para limpar o alerta
+                renderScheduleTab(); 
+                render(); 
+                openModal(state.editingIndex); 
             }
         };
 
-        // ===== NOVA LÓGICA PARA O BOTÃO "INICIAR AGORA" =====
         startBtn.onclick = async () => {
             const i = state.editingIndex;
             const machine = state.machines[i];
@@ -575,17 +680,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            // USA O NOVO MODAL
             showConfirm(
                 'Iniciar Manutenção?',
                 'Deseja iniciar a manutenção agendada agora? O status da máquina será alterado para "EM MANUTENÇÃO".',
-                async () => { // A lógica assíncrona vai aqui dentro
+                async () => { 
                     const schedule = machine.nextMaint;
                     const newMaintData = {
                         tag: machine.id,
                         type: 'Preventiva',
                         desc: schedule.desc || 'Manutenção Agendada',
-                        start_date: new Date().toISOString().slice(0, 10)
+                        start_date: new Date().toISOString().slice(0, 10),
+                        tecnico: 'Agendado' // Define um técnico padrão
                     };
 
                     try {
@@ -598,6 +703,8 @@ document.addEventListener('DOMContentLoaded', () => {
                             type: newMaintData.type,
                             desc: newMaintData.desc,
                             start_date: newMaintData.start_date,
+                            tecnico: newMaintData.tecnico, // NOVO
+                            cost: null, // NOVO
                             end_date: null,
                             steps: []
                         });
@@ -616,7 +723,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         notify('Erro ao iniciar manutenção.', 'error');
                     }
                 },
-                'warning' // Tipo 'warning' (azul)
+                'warning' 
             );
         };
     };
@@ -655,7 +762,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     legend: { position: 'right', labels: { padding: 15, color: getComputedStyle(document.body).getPropertyValue('--text') } },
                     tooltip: {
                         callbacks: {
-                            label: (c) => ` ${c.label}: ${c.raw} (${((c.raw / state.machines.length) * 100).toFixed(1)}%)`
+                            label: (c) => ` ${c.label}: ${c.raw} (${(state.machines.length > 0 ? (c.raw / state.machines.length) * 100 : 0).toFixed(1)}%)`
                         }
                     }
                 }
@@ -672,22 +779,20 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
         if (state.machines.some(m => m.id === id)) {
-            // Usa o novo modal de confirmação
             showConfirm(
                 'ID Duplicado',
-                `Já existe uma máquina com ID "${id}". Deseja adicionar mesmo assim?`,
-                () => { // Só executa a adição se o usuário confirmar
+                `Já existe uma máquina com ID "${id}". Deseja adicionar mesmo assim? (Pode causar conflitos)`,
+                () => { 
                     _executeAddMachine();
                 },
-                'warning' // Tipo 'warning' (azul)
+                'warning' 
             );
-            return; // Espera a confirmação
+            return; 
         }
         
-        _executeAddMachine(); // Adiciona direto se o ID não for duplicado
+        _executeAddMachine(); 
     };
     
-    // Função auxiliar para a lógica de adição (para evitar repetição)
     const _executeAddMachine = async () => {
         const id = document.getElementById('idItem').value.trim();
         const name = document.getElementById('nomeMaquina').value.trim();
@@ -696,7 +801,7 @@ document.addEventListener('DOMContentLoaded', () => {
             id, name,
             capacity: document.getElementById('capacidade').value.trim(),
             manufacturer: document.getElementById('fabricante').value.trim(),
-            quantity: Number(document.getElementById('quantidade').value) || 1,
+            quantity: Number(document.getElementById('quantidade').value) || 0, // Horas iniciais pode ser 0
             status: 'OK',
             maintenance: [], history: [], nextMaint: null
         };
@@ -708,16 +813,19 @@ document.addEventListener('DOMContentLoaded', () => {
             };
             await sendApiRequest(API_URL, 'POST', apiData);
             
-            await addHistory(newMachine, 'Máquina registrada no sistema.');
+            // Adiciona um histórico fake localmente, que será substituído no próximo load
+            newMachine.history = [{ date: new Date().toLocaleString('pt-BR'), text: 'Máquina registrada no sistema.' }];
             
-            // Adiciona localmente apenas após o sucesso da API
             state.machines.unshift(newMachine);
             DOMElements.machineForm.reset();
-            document.getElementById('quantidade').value = 1;
+            document.getElementById('quantidade').value = 0; // Reseta para 0
             notify('Máquina adicionada com sucesso!', 'success');
             render();
+            
+            // Adiciona o histórico real após adicionar a máquina
+            await addHistory(newMachine, 'Máquina registrada no sistema.');
+
         } catch (e) {
-            // A notificação de erro já é tratada por sendApiRequest
         }
     };
 
@@ -740,19 +848,22 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
+    // FUNÇÃO NÃO USADA MAIS (botões +/- removidos da tabela)
+    /*
     const updateQuantity = async (index, change) => { 
         const machine = state.machines[index];
         const oldQty = machine.quantity;
-        const newQty = Math.max(1, oldQty + change);
+        const newQty = Math.max(0, oldQty + change); // Pode ser 0
 
         if (oldQty !== newQty) {
             if (await updateMachineField(machine, 'quantity', newQty)) {
-                await addHistory(machine, `Quantidade alterada de ${oldQty} para ${newQty}.`);
-                notify('Quantidade atualizada', 'success');
+                await addHistory(machine, `Horas de uso alteradas de ${oldQty} para ${newQty}.`);
+                notify('Horas de uso atualizadas', 'success');
                 render();
             }
         }
     };
+    */
 
     // ======== EVENT LISTENERS ========
     const addEventListeners = () => {
@@ -760,7 +871,7 @@ document.addEventListener('DOMContentLoaded', () => {
         DOMElements.machineForm.addEventListener('submit', e => { e.preventDefault(); addMachine(); });
         document.getElementById('resetForm').addEventListener('click', () => {
             DOMElements.machineForm.reset();
-            document.getElementById('quantidade').value = 1;
+            document.getElementById('quantidade').value = 0; // ATUALIZADO
         });
 
         DOMElements.searchEl.addEventListener('input', () => { state.search = DOMElements.searchEl.value; state.page = 1; render(); });
@@ -780,7 +891,6 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('modalClose').addEventListener('click', closeModal);
         DOMElements.backdrop.addEventListener('click', e => { if (e.target === DOMElements.backdrop) closeModal(); });
         
-        // ATUALIZADO: Botão de excluir no modal
         document.getElementById('modalDelete').addEventListener('click', () => {
             const machine = state.machines[state.editingIndex];
             showConfirm(
@@ -809,7 +919,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const addDynamicTableEventListeners = () => {
         document.querySelectorAll('.btn-view').forEach(b => b.addEventListener('click', e => openModal(e.currentTarget.dataset.idx)));
         
-        // ATUALIZADO: Botão de excluir na tabela
         document.querySelectorAll('.btn-delete').forEach(b => b.addEventListener('click', e => {
             const index = +e.currentTarget.dataset.idx;
             const machine = state.machines[index];
@@ -821,25 +930,12 @@ document.addEventListener('DOMContentLoaded', () => {
             );
         }));
         
-        document.querySelectorAll('.btn-qty-inc').forEach(b => b.addEventListener('click', e => updateQuantity(+e.currentTarget.dataset.idx, 1)));
-        document.querySelectorAll('.btn-qty-dec').forEach(b => b.addEventListener('click', e => updateQuantity(+e.currentTarget.dataset.idx, -1)));
+        // Botões de +/- removidos, lógica abaixo não é mais necessária
+        // document.querySelectorAll('.btn-qty-inc').forEach(b => b.addEventListener('click', e => updateQuantity(+e.currentTarget.dataset.idx, 1)));
+        // document.querySelectorAll('.btn-qty-dec').forEach(b => b.addEventListener('click', e => updateQuantity(+e.currentTarget.dataset.idx, -1)));
 
-        document.querySelectorAll('input[data-field="quantity"]').forEach(inp => inp.addEventListener('change', async e => { 
-            const index = +e.currentTarget.dataset.idx;
-            const machine = state.machines[index];
-            const oldQty = machine.quantity;
-            const newQty = Math.max(1, Number(e.currentTarget.value) || 1);
-            
-            if (oldQty !== newQty) {
-                if (await updateMachineField(machine, 'quantity', newQty)) {
-                    await addHistory(machine, `Quantidade alterada de ${oldQty} para ${newQty}.`);
-                    notify('Quantidade atualizada', 'success');
-                }
-            }
-            e.currentTarget.value = machine.quantity; 
-            render();
-        }));
-
+        // Listener de 'change' removido do input de horas (agora é um 'td.editable')
+        
         document.querySelectorAll('.statusSel').forEach(s => s.addEventListener('change', async e => { 
             const index = +e.currentTarget.dataset.idx;
             const machine = state.machines[index];
@@ -860,10 +956,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 const idx = +e.currentTarget.dataset.idx;
                 const machine = state.machines[idx];
                 const field = e.currentTarget.dataset.field;
-                const oldValue = machine[field] || '';
-                // Pega o span de dentro do TD, se houver (para o campo nome com badge)
+                let oldValue = machine[field] || '';
+                
                 const targetEl = e.currentTarget.querySelector('span') || e.currentTarget;
-                const newValue = targetEl.textContent.trim();
+                let newValue = targetEl.textContent.trim();
+
+                // Validação especial para Horas de Uso (quantity)
+                if (field === 'quantity') {
+                    oldValue = Number(oldValue) || 0;
+                    newValue = Number(newValue.replace(/[^0-9.]/g, '')) || 0;
+                }
 
                 if (oldValue !== newValue) {
                     if (await updateMachineField(machine, field, newValue)) {
@@ -873,113 +975,150 @@ document.addEventListener('DOMContentLoaded', () => {
                         targetEl.textContent = oldValue; 
                     }
                 }
+                // Garante que o valor exibido seja o valor final (formatado, se necessário)
+                targetEl.textContent = machine[field]; 
             });
         });
     };
 
+    // ====================================================================
+    // addMaintenanceEventListeners (TOTALMENTE REFORMULADA)
+    // ====================================================================
     const addMaintenanceEventListeners = () => {
-        // Iniciar Manutenção
+        
+        // --- Iniciar Nova Manutenção ---
         document.getElementById('maintFormNew')?.addEventListener('submit', async (e) => { 
             e.preventDefault();
             const i = state.editingIndex;
             const machine = state.machines[i];
+            
+            // Pega os novos campos
             const type = document.getElementById('maintType').value;
             const desc = document.getElementById('maintDesc').value.trim();
             const startDate = document.getElementById('maintStartDate').value;
-            if (!desc) { notify('A descrição é obrigatória.', 'error'); return; }
+            const tecnico = document.getElementById('maintTecnico').value.trim(); // NOVO
+            
+            if (!desc || !tecnico) { 
+                notify('Descrição e Técnico são obrigatórios.', 'error'); 
+                return; 
+            }
 
-            const newMaintData = { tag: machine.id, type, desc, start_date: startDate };
+            const newMaintData = { 
+                tag: machine.id, 
+                type, 
+                desc, 
+                start_date: startDate, 
+                tecnico: tecnico // NOVO
+            };
             
             try {
                 const apiResponse = await sendApiRequest(API_URL, 'POST', { action: 'start_maintenance', data: newMaintData });
-                const newMaintId = apiResponse.maint_id; // Pega o ID REAL do DB
+                const newMaintId = apiResponse.maint_id; 
 
                 machine.maintenance = machine.maintenance || [];
-                // Adiciona o ID real do DB e a lista de steps vazia no estado local.
-                machine.maintenance.push({ id: newMaintId, type, desc, start_date: startDate, end_date: null, steps: [] }); 
+                machine.maintenance.push({ 
+                    id: newMaintId, 
+                    type, 
+                    desc, 
+                    start_date: startDate, 
+                    tecnico: tecnico, // NOVO
+                    cost: null, // NOVO
+                    end_date: null, 
+                    steps: [] 
+                }); 
                 
-                await addHistory(machine, `Manutenção (${type}) INICIADA. Motivo: ${desc}`);
+                await addHistory(machine, `Manutenção (${type}) INICIADA. Técnico: ${tecnico}. Motivo: ${desc}`);
+                
                 if (await updateMachineField(machine, 'status', 'EM MANUTENÇÃO')) {
                     notify('Manutenção registrada com sucesso!', 'success');
                     render();
-                    openModal(i); // Recarrega o modal para mostrar a aba de Etapas
-                } else {
-                    // Se falhar a atualização de status, é necessário reverter localmente
-                    machine.maintenance.pop();
-                    machine.history.pop();
-                }
+                    openModal(i); // Recarrega o modal para mostrar o accordion
+                } 
 
-            } catch(e) { /* A notificação de erro já é tratada por sendApiRequest */ }
+            } catch(e) { /* Erro já notificado */ }
         });
 
-        // Registrar Etapa
+        // --- Registrar Etapa (Passo) ---
+        // Nota: Este formulário só existe dentro da manutenção ativa
         document.getElementById('maintFormStep')?.addEventListener('submit', async (e) => { 
             e.preventDefault();
             const i = state.editingIndex;
             const machine = state.machines[i];
-            const stepDesc = document.getElementById('stepDesc').value.trim();
-            if (!stepDesc) { notify('A descrição da etapa é obrigatória.', 'error'); return; }
+            const stepDescEl = document.getElementById('stepDesc');
+            const stepDesc = stepDescEl.value.trim();
+            if (!stepDesc) { 
+                notify('A descrição da etapa é obrigatória.', 'error'); 
+                return; 
+            }
             
             const activeMaint = (machine.maintenance || []).find(x => !x.end_date);
-            if (!activeMaint) return;
+            if (!activeMaint) return; // Segurança
 
-            const newStep = {
-                tag: machine.id, 
+            const newStepData = {
+                tag: machine.id, // (Não usado pela API, mas bom ter)
                 description: stepDesc, 
                 maint_id: activeMaint.id // ID real da manutenção no DB
             };
             
-            // NOTE: 'add_maint_step' está mapeado para handleAddHistory (Histórico Geral) no PHP.
             try {
-                await sendApiRequest(API_URL, 'PUT', { action: 'add_maint_step', data: newStep });
+                // USA A NOVA AÇÃO 'add_maint_step'
+                const response = await sendApiRequest(API_URL, 'PUT', { action: 'add_maint_step', data: newStepData });
 
-                activeMaint.steps.push({ date: new Date().toLocaleString('pt-BR'), description: stepDesc });
+                // Adiciona o passo retornado pela API (com data/hora do server)
+                activeMaint.steps.push(response.new_step); 
+                
+                // Adiciona ao histórico GERAL também
                 await addHistory(machine, `Etapa de Manutenção registrada: ${stepDesc}`);
+                
                 notify('Etapa registrada!', 'info');
-                document.getElementById('stepDesc').value = '';
-                renderMaintenanceTab(); 
-            } catch(e) { /* A notificação de erro já é tratada por sendApiRequest */ }
+                stepDescEl.value = '';
+                renderMaintenanceTab(); // Renderiza a aba para mostrar o novo passo
+            } catch(e) { /* Erro já notificado */ }
         });
 
-        // Finalizar Manutenção
+        // --- Finalizar Manutenção ---
+        // Nota: Este botão só existe dentro da manutenção ativa
         document.getElementById('endMaint')?.addEventListener('click', async (e) => { 
             const i = state.editingIndex;
             const machine = state.machines[i];
             const activeMaint = (machine.maintenance || []).find(x => !x.end_date);
-            const maintId = e.currentTarget.dataset.maintId; // ID real da manutenção no DB
+            const maintId = e.currentTarget.dataset.maintId; // ID real da manutenção
 
             if (!activeMaint || !maintId) return;
 
             const endDate = prompt("Informe a data de finalização (AAAA-MM-DD):", new Date().toISOString().slice(0, 10));
-            if (endDate) {
-                const finishData = { 
-                    tag: machine.id, 
-                    end_date: endDate, 
-                    maint_id: maintId 
-                };
-                
-                try {
-                    // 1. Envia a requisição para ATUALIZAR a coluna data_fim no DB
-                    await sendApiRequest(API_URL, 'PUT', { action: 'end_maintenance', data: finishData });
+            if (!endDate) return; // Cancelado
 
-                    // 2. Atualiza o estado local e adiciona histórico
-                    activeMaint.end_date = endDate;
-                    await addHistory(machine, `Manutenção (${activeMaint.type}) FINALIZADA em ${formatDate(endDate)}. Teve ${activeMaint.steps ? activeMaint.steps.length : 0} etapas.`);
-                    
-                    // 3. Atualiza o status da máquina para 'OK'
-                    if (await updateMachineField(machine, 'status', 'OK')) {
-                        notify('Manutenção finalizada! Status da máquina alterado para "OK".', 'success');
-                        render();
-                        closeModal();
-                    } else {
-                        // Se falhar a atualização de status, reverte o estado local (opcional)
-                        activeMaint.end_date = null;
-                        machine.history.pop();
-                    }
-                } catch(e) { /* A notificação de erro já é tratada por sendApiRequest */ }
-            }
+            // NOVO: Pede o Custo
+            const cost = prompt("Informe o Custo Total da Manutenção (ex: 150.99):");
+            if (cost === null) return; // Cancelado
+
+            const finishData = { 
+                tag: machine.id, 
+                end_date: endDate, 
+                maint_id: maintId,
+                cost: cost || 0 // NOVO
+            };
+            
+            try {
+                await sendApiRequest(API_URL, 'PUT', { action: 'end_maintenance', data: finishData });
+
+                activeMaint.end_date = endDate;
+                activeMaint.cost = parseFloat(cost) || 0; // Atualiza estado local
+                
+                await addHistory(machine, `Manutenção (${activeMaint.type}) FINALIZADA em ${formatDate(endDate)}. Custo: R$ ${activeMaint.cost.toFixed(2)}. Teve ${activeMaint.steps.length} etapas.`);
+                
+                if (await updateMachineField(machine, 'status', 'OK')) {
+                    notify('Manutenção finalizada! Status da máquina alterado para "OK".', 'success');
+                    render();
+                    closeModal();
+                } 
+            } catch(e) { /* Erro já notificado */ }
         });
     };
+    // ====================================================================
+    // FIM DA REFORMULAÇÃO
+    // ====================================================================
 
     const setupExtraFeatures = () => {
         const applyTheme = () => {
@@ -991,10 +1130,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         };
         
-        // 💡 CORREÇÃO PRINCIPAL: Função auxiliar para lidar com o redimensionamento do Chart
         const handleChartResize = () => {
-            // Usa setTimeout(0) para garantir que o navegador complete o layout
-            // após a transição CSS antes de redimensionar o Chart.js.
             setTimeout(() => {
                 if (chart) {
                     chart.resize();
@@ -1003,7 +1139,6 @@ document.addEventListener('DOMContentLoaded', () => {
             }, 0);
         }
         
-        // CORREÇÃO: Usar transitionend combinado com setTimeout(0)
         document.getElementById('toggleChartFullscreen').addEventListener('click', function() {
             const chartPanel = document.getElementById('chartPanel');
             const toggleChartIcon = this.querySelector('i');
@@ -1012,19 +1147,15 @@ document.addEventListener('DOMContentLoaded', () => {
             if (isFullscreen) {
                 toggleChartIcon.classList.replace('fa-expand', 'fa-compress');
                 this.title = 'Sair da Tela Cheia';
-    
-                
             } else {
                 toggleChartIcon.classList.replace('fa-compress', 'fa-expand');
                 this.title = 'Tela Cheia';
                 window.location.reload();
                 render(); 
             }
-
             chartPanel.removeEventListener('transitionend', handleChartResize);
             chartPanel.addEventListener('transitionend', handleChartResize, { once: true });
         });
-
 
         // Exportação de JSON
         document.getElementById('exportJson').addEventListener('click', () => {
@@ -1039,9 +1170,7 @@ document.addEventListener('DOMContentLoaded', () => {
             notify('Dados exportados.', 'info');
         });
 
-        // =================================================================
-        // INÍCIO DA ALTERAÇÃO: Importação de JSON
-        // =================================================================
+        // Importação de JSON
         const importFile = document.getElementById('importFile');
         document.getElementById('importBtn').addEventListener('click', () => importFile.click());
         
@@ -1050,16 +1179,13 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!file) return;
             const reader = new FileReader();
             
-            // Tornamos o onload assíncrono para usar await
             reader.onload = async (ev) => {
                 try {
                     const importedMachines = JSON.parse(ev.target.result);
                     if (!Array.isArray(importedMachines)) throw new Error("O arquivo não contém um array JSON.");
 
-                    // Mensagem de confirmação atualizada
                     if (confirm(`Deseja importar e salvar ${importedMachines.length} máquinas no banco de dados? (IDs existentes serão atualizados)`)) {
                         
-                        // Normaliza os dados para garantir que campos essenciais existam
                         const machinesToSave = importedMachines.map(m => {
                             m.maintenance = m.maintenance || [];
                             m.history = m.history || [];
@@ -1067,30 +1193,25 @@ document.addEventListener('DOMContentLoaded', () => {
                             m.id = m.id || `import_${Date.now()}`;
                             m.name = m.name || 'Sem Nome';
                             m.status = m.status || 'OK';
-                            m.quantity = Number(m.quantity) || 1;
+                            m.quantity = Number(m.quantity) || 0; // ATUALIZADO
                             return m;
                         });
 
-                        // Mostra um spinner de carregamento
                         DOMElements.tableOverlay.innerHTML = '<div class="loader-spinner"></div><p>Importando dados...</p>';
                         DOMElements.tableOverlay.classList.remove('hidden');
 
                         try {
-                            // CHAMA A NOVA AÇÃO DA API
                             const response = await sendApiRequest(API_URL, 'POST', {
                                 action: 'batch_add_machines',
                                 data: machinesToSave
                             });
                             
-                            notify(response.message, 'success'); // Ex: "15 máquinas importadas..."
+                            notify(response.message, 'success'); 
                             
-                            // RECARREGA TUDO DO BANCO DE DADOS
                             await loadState(); 
-                            render(); // Renderiza a tabela com os novos dados
+                            render(); 
                             
                         } catch (apiError) {
-                            // O erro da API já é notificado por sendApiRequest
-                            // Apenas esconde o overlay
                             DOMElements.tableOverlay.classList.add('hidden');
                         }
                     }
@@ -1098,12 +1219,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     notify('Arquivo JSON inválido ou corrompido.', 'error');
                 }
             };
-            reader.readAsText(file);
-            e.target.value = ''; // Limpa o input para permitir reimportar o mesmo arquivo
+            reader.readText(file);
+            e.target.value = ''; 
         });
-        // =================================================================
-        // FIM DA ALTERAÇÃO
-        // =================================================================
         
         document.getElementById('toggleTheme').addEventListener('click', () => {
             const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
@@ -1112,13 +1230,12 @@ document.addEventListener('DOMContentLoaded', () => {
             applyTheme();
         });
         
-        // ===== NOVO: Dashboard Interativo =====
+        // Dashboard Interativo
         const setFilterAndRender = (status) => {
             state.filter = status;
             DOMElements.filterEl.value = status;
             state.page = 1;
             render();
-            // Scroll suave de volta para a tabela
             document.getElementById('machinesTable').scrollIntoView({ behavior: 'smooth' });
         };
 
@@ -1127,9 +1244,9 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('metricMaint').addEventListener('click', () => setFilterAndRender('EM MANUTENÇÃO'));
         document.getElementById('metricInop').addEventListener('click', () => setFilterAndRender('INOPERANTE'));
 
+        // Métricas novas (ainda não clicáveis)
         document.getElementById('metricNextMaint').addEventListener('click', () => {
              notify('Filtro por agendamentos futuros ainda em desenvolvimento.', 'info');
-             // Aqui você poderia criar um filtro customizado
         });
         
         applyTheme();
@@ -1150,7 +1267,12 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         // Tentativa de outros formatos (data/hora completa)
         try {
-            return new Date(dateString).toLocaleDateString('pt-BR');
+            // Se for data/hora, formata
+            if (dateString.includes('T') || dateString.includes(' ')) {
+                 return new Date(dateString).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' });
+            }
+            // Se for só data, formata
+            return new Date(dateString).toLocaleDateString('pt-BR', { timeZone: 'UTC' });
         } catch (e) {
             return dateString;
         }

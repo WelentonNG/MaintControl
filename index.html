@@ -46,7 +46,7 @@
                     <th data-sort="name">Nome <i class="fa-solid fa-sort"></i></th>
                     <th data-sort="capacity">Capacidade <i class="fa-solid fa-sort"></i></th>
                     <th data-sort="manufacturer">Fabricante <i class="fa-solid fa-sort"></i></th>
-                    <th data-sort="quantity">Qtd <i class="fa-solid fa-sort"></i></th>
+                    <th data-sort="quantity">Horas de Uso <i class="fa-solid fa-sort"></i></th>
                     <th>Status</th>
                     <th>Ações</th>
                   </tr>
@@ -100,8 +100,8 @@
                 <input id="fabricante" />
               </div>
               <div>
-                <label for="quantidade">Quantidade</label>
-                <input id="quantidade" type="number" min="1" value="1" />
+                <label for="quantidade">Horas Iniciais</label>
+                <input id="quantidade" type="number" min="0" value="0" />
               </div>
               <div style="grid-column:1/-1;display:flex;gap:8px">
                 <button class="btn" type="submit"><i class="fa-solid fa-plus"></i> Adicionar Máquina</button>
@@ -135,8 +135,16 @@
                 <div class="small"><i class="fa-solid fa-calendar-check"></i> Próx. Maint. (30D)</div>
                 <div id="metricNextMaintDisplay" style="font-weight:800;font-size:20px">0</div>
               </div>
-              <div class="metric" id="metricQtyTotal" title="Quantidade total de unidades">
-                <div class="small"><i class="fa-solid fa-plus-minus"></i> Qtd Total</div>
+              <div class="metric" id="metricActiveMaint" title="Manutenções em andamento agora">
+                <div class="small"><i class="fa-solid fa-person-digging"></i> Manut. Ativas</div>
+                <div id="metricActiveMaintDisplay" style="font-weight:800;font-size:20px">0</div>
+              </div>
+              <div class="metric" id="metricDoneMaint" title="Manutenções concluídas nos últimos 30 dias">
+                <div class="small"><i class="fa-solid fa-clipboard-check"></i> Concluídas (30D)</div>
+                <div id="metricDoneMaintDisplay" style="font-weight:800;font-size:20px">0</div>
+              </div>
+              <div class="metric" id="metricQtyTotal" title="Total de Horas de Uso (Soma)">
+                <div class="small"><i class="fa-solid fa-stopwatch"></i> Total Horas Uso</div>
                 <div id="metricQtyTotalDisplay" style="font-weight:800;font-size:20px">0</div>
               </div>
             </div>
@@ -167,8 +175,25 @@
             <p><strong>Nome:</strong> <span id="mName"></span></p>
             <p><strong>Capacidade:</strong> <span id="mCap"></span></p>
             <p><strong>Fabricante:</strong> <span id="mFab"></span></p>
-            <p><strong>Quantidade:</strong> <span id="mQtd"></span></p>
+            <p><strong>Total de Horas de Uso:</strong> <span id="mQtd"></span></p>
             <p><strong>Status:</strong> <span id="mStatus" class="pill"></span></p>
+
+            <div class="separator"></div>
+
+            <form id="logHoursForm" class="add-form" style="grid-template-columns: 1fr 1fr; gap: 10px;">
+                <h4 style="margin:0; grid-column: 1 / -1;">Registrar Horas de Uso</h4>
+                <div>
+                    <label for="hoursToAdd">Horas a Adicionar</label>
+                    <input id="hoursToAdd" type="number" min="1" value="1" required />
+                </div>
+                <div>
+                    <label for="hoursReason">Motivo/Observação</label>
+                    <input id="hoursReason" placeholder="Ex: Turno da manhã" required />
+                </div>
+                <div style="grid-column: 1 / -1;">
+                    <button class="btn secondary" type="submit"><i class="fa-solid fa-plus"></i> Registrar Horas</button>
+                </div>
+            </form>
           </div>
 
           <div id="tabMaintenance" style="display:none"></div>

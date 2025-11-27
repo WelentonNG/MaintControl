@@ -545,7 +545,8 @@ tr.row:hover{
 /* ====== MÉTRICAS E GRÁFICO ====== */
 .metrics{
   display:grid;
-  grid-template-columns: 1fr 1fr;
+  /* ATUALIZADO: Agora suporta 8 métricas */
+  grid-template-columns: repeat(2, 1fr);
   gap:16px;
   flex-wrap:wrap;
 }
@@ -554,7 +555,8 @@ tr.row:hover{
   background:var(--bg);
   padding:20px;
   border-radius:var(--border-radius);
-  min-width:140px;
+  /* ATUALIZADO: Min-width ajustado */
+  min-width:130px;
   text-align: center;
   transition: var(--transition);
   border: 1px solid var(--border-color);
@@ -616,87 +618,55 @@ tr.row:hover{
   }
   
   .metrics {
-    grid-template-columns: 1fr;
+    /* ATUALIZADO: Fica com 2 colunas mesmo em telas pequenas */
+    grid-template-columns: 1fr 1fr;
   }
 }
 
 /* ====== ESTILOS PERSONALIZADOS PARA O CALENDÁRIO (Botão Vermelho) ====== */
-
-/* 1. Garante que o campo tenha espaço para o botão personalizado */
-#tabSchedule input[type="date"] {
-  /* Aumenta o padding à direita para evitar que o ícone do calendário sobreponha o texto */
-  padding-right: 40px; 
-}
-
-/* 2. Estilo para o botão/indicador do calendário em input[type="date"] para WebKit (Chrome, Edge, Safari) */
-/* Este pseudo-elemento controla a aparência do botão/ícone do calendário */
 #tabSchedule input[type="date"]::-webkit-calendar-picker-indicator {
-  /* Torna o indicador visível e permite customização */
   opacity: 1;
   filter: none;
-  
-  /* Mude a cor de fundo do "botão" do calendário para vermelho (Danger) */
-  
-  
-  /* Mude a cor do ícone do calendário para branco para contrastar com o fundo vermelho */
   color: white; 
-  
-  /* Adiciona padding e borda arredondada para parecer um botão */
   padding: 6px;
   border-radius: 4px;
   cursor: pointer;
-  
-  /* Define o tamanho */
   width: 28px;
   height: 28px;
 }
 
 /* ====== ESTILOS PARA TELA CHEIA DO GRÁFICO CORRIGIDO E FORÇADO ====== */
-
-/* Estilo que é aplicado ao painel quando a classe 'fullscreen' é adicionada via JS */
 #chartPanel.fullscreen {
-  position: fixed !important; /* Força a posição fixa para cobrir a tela */
+  position: fixed !important;
   top: 0 !important;
   left: 0 !important;
   width: 100vw !important;
   height: 100vh !important;
-  z-index: 9999 !important; /* Força a camada mais alta */
+  z-index: 9999 !important;
   border-radius: 0 !important; 
-  background: var(--card) !important; /* Garante que o fundo seja opaco */
+  background: var(--card) !important;
   padding: 24px !important;
-  
-  /* Usa flexbox para fazer o gráfico interno crescer */
   display: flex !important; 
   flex-direction: column !important;
 }
-
-/* Faz o container do gráfico (o div com o canvas) crescer */
 #chartPanel.fullscreen #chartContainer {
-  flex-grow: 1 !important; /* Ocupa todo o espaço vertical disponível */
-  height: auto !important; /* Sobrescreve a altura fixa de 400px */
+  flex-grow: 1 !important;
+  height: auto !important;
   max-height: none !important; 
 }
-
-/* Garante que o canvas se ajuste corretamente dentro do container */
 #chartPanel.fullscreen #statusChart {
   max-height: 100% !important; 
   width: 100% !important;
 }
-
-/* Esconde o resto do conteúdo para focar no gráfico, mantendo a tela limpa */
 #chartPanel.fullscreen ~ .grid-2, 
 #chartPanel.fullscreen ~ header {
   display: none !important;
 }
-
-/* Garante que o cabeçalho DENTRO do painel fullscreen seja visto (para o botão 'fechar') */
 #chartPanel.fullscreen > div:first-child { 
   display: flex !important;
 }
 
 /* ====== NOVOS ELEMENTOS VISUAIS ====== */
-
-/* Badge para contadores */
 .badge {
   display: inline-flex;
   align-items: center;
@@ -710,8 +680,6 @@ tr.row:hover{
   min-width: 20px;
   height: 20px;
 }
-
-/* Loading spinner */
 .spinner {
   display: inline-block;
   width: 20px;
@@ -721,12 +689,9 @@ tr.row:hover{
   border-top-color: white;
   animation: spin 1s ease-in-out infinite;
 }
-
 @keyframes spin {
   to { transform: rotate(360deg); }
 }
-
-/* Cards com ícones */
 .card-icon {
   display: flex;
   align-items: center;
@@ -739,8 +704,6 @@ tr.row:hover{
   font-size: 20px;
   margin-bottom: 16px;
 }
-
-/* Separadores elegantes */
 .separator {
   height: 1px;
   background: linear-gradient(90deg, transparent, var(--border-color), transparent);
@@ -755,14 +718,12 @@ tr.row:hover{
   max-width: 450px;
   text-align: center;
 }
-
 .modal-confirm .icon {
   font-size: 40px;
   margin-bottom: 15px;
 }
 .modal-confirm .icon.danger { color: var(--danger); }
 .modal-confirm .icon.warning { color: var(--warning); }
-
 .modal-confirm .btn-confirm {
   background: var(--danger);
   border-color: var(--danger);
@@ -774,11 +735,9 @@ tr.row:hover{
 
 /* 2. Loader e Estado Vazio para a Tabela */
 .table-wrap {
-  /* Posição relativa para o overlay */
   position: relative;
-  min-height: 300px; /* Garante altura mínima durante o load */
+  min-height: 300px; 
 }
-
 #table-overlay {
   position: absolute;
   inset: 0;
@@ -794,13 +753,10 @@ tr.row:hover{
   opacity: 1;
   visibility: visible;
 }
-
 #table-overlay.hidden {
   opacity: 0;
   visibility: hidden;
 }
-
-/* Animação do Spinner (reutilizada do seu .spinner) */
 .loader-spinner {
   display: inline-block;
   width: 48px;
@@ -809,11 +765,6 @@ tr.row:hover{
   border-radius: 50%;
   border-top-color: transparent;
   animation: spin 1s ease-in-out infinite;
-}
-
-/* Re-usando sua animação spin */
-@keyframes spin {
-  to { transform: rotate(360deg); }
 }
 
 .empty-state {
@@ -863,7 +814,7 @@ tr.row:hover{
   padding: 15px;
   border-radius: var(--border-radius);
   margin-bottom: 16px;
-  display: none; /* Oculto por padrão */
+  display: none; 
   font-weight: 600;
   border: 1px solid var(--color);
 }
@@ -882,5 +833,114 @@ tr.row:hover{
 
 /* 5. Dashboard Interativo */
 .metric {
-  cursor: pointer; /* Indica que é clicável */
+  cursor: pointer; 
+}
+
+/* =========================================== */
+/* === NOVOS ESTILOS DA ATUALIZAÇÃO (ACCORDION) === */
+/* =========================================== */
+
+/* Container do Accordion */
+.accordion-maint {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-height: 400px;
+  overflow-y: auto;
+  padding-right: 5px; /* Espaço para scrollbar */
+}
+
+/* Elemento <details> (cada item do accordion) */
+.accordion-maint details {
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  transition: var(--transition);
+}
+
+/* <summary> (O cabeçalho clicável) */
+.accordion-maint summary {
+  padding: 16px;
+  cursor: pointer;
+  font-weight: 600;
+  list-style: none; /* Remove a seta padrão */
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: var(--transition);
+}
+
+.accordion-maint summary:hover {
+  background: color-mix(in srgb, var(--primary) 5%, transparent);
+}
+
+/* Ícone de seta (chevron) */
+.accordion-maint summary::after {
+  content: '\f078'; /* Ícone FontAwesome (chevron-down) */
+  font-family: 'Font Awesome 6 Free';
+  font-weight: 900;
+  transition: var(--transition);
+  font-size: 14px;
+  color: var(--muted);
+}
+
+/* Conteúdo (quando o accordion está aberto) */
+.accordion-maint details[open] {
+  border-color: var(--primary);
+  box-shadow: var(--shadow);
+}
+
+.accordion-maint details[open] summary {
+  border-bottom: 1px solid var(--border-color);
+  color: var(--primary);
+  background: color-mix(in srgb, var(--primary) 5%, transparent);
+}
+
+/* Gira a seta quando aberto */
+.accordion-maint details[open] summary::after {
+  transform: rotate(180deg);
+  color: var(--primary);
+}
+
+/* Grid para os detalhes (Técnico, Custo, etc.) */
+.maint-details-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 12px;
+  padding: 16px;
+  background: var(--bg);
+}
+
+.maint-details-grid p {
+  margin: 0;
+  font-size: 14px;
+}
+.maint-details-grid p strong {
+  display: block;
+  font-size: 12px;
+  color: var(--muted);
+  margin-bottom: 2px;
+}
+
+/* Lista de Passos */
+.maint-steps-list {
+  list-style-type: none;
+  padding: 16px;
+  margin: 0;
+  max-height: 150px;
+  overflow-y: auto;
+}
+
+.maint-steps-list li {
+  padding: 10px;
+  border-bottom: 1px solid var(--border-color);
+}
+.maint-steps-list li:last-child {
+  border-bottom: none;
+}
+.maint-steps-list li .small {
+  font-weight: 600;
+}
+.maint-steps-list li p {
+  margin: 4px 0 0;
+  color: var(--text);
 }
