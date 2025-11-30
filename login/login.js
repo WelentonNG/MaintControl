@@ -115,7 +115,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Simular requisição de API
     setTimeout(() => {
           
-      alert('Login bem-sucedido! (Simulação)');
+      window.location.href = '../index.html'
       
       // Re-abilitar botão (para fins de teste, já que não estamos redirecionando)
        loginButton.disabled = false;

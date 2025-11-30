@@ -1,5 +1,10 @@
+// type theme.js
+  
+// Alternar tema claro/escuro com persistência usando localStorage
+
 document.addEventListener('DOMContentLoaded', () => {
   const toggleTheme = document.getElementById('toggleTheme');
+    
 
   // Alternar tema
   if (toggleTheme) {
