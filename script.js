@@ -1232,3 +1232,6 @@ document.addEventListener('DOMContentLoaded', () => {
     init();
 });
 
+//TODO:Mudar o sistema de grafio para um painel pra ser melhor de visualizar
+//TODO:Adicionar sistema de notificações por email para manutenções agendadas
+//TODO:Fazer menuzinho onde apareca usuario logado

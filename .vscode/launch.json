@@ -5,8 +5,8 @@
             "name": "Launch Chrome",
             "request": "launch",
             "type": "chrome",
-            "url": "http://localhost/MC/index.html",
+            "url": "http://localhost/MC/login/login.html",
             "webRoot": "${workspaceFolder}"
         },
     ]
-}
+}// LAUNCH CONFIGURATION FILE
