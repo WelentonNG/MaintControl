@@ -67,21 +67,28 @@
 
           <div style="height:24px"></div>
 
-          <div class="panel" id="chartPanel">
-            
+          <div class="panel" id="summaryPanel">
             <div style="display:flex;justify-content:space-between;align-items:center; margin-bottom: 20px;">
-              <h3 style="margin-top:0; margin-bottom: 0;">Visão Geral de Status</h3>
-              
-              <button id="toggleChartFullscreen" class="btn secondary" title="Tela Cheia" style="padding: 6px 10px; font-size: 14px;">
-                  <i class="fa-solid fa-expand"></i>
-              </button>
+              <h3 style="margin-top:0; margin-bottom: 0;">Resumo da Frota</h3>
             </div>
             
-            <div id="chartContainer" style="position: relative; height:400px;">
-              <canvas id="statusChart"></canvas>
+            <div class="table-wrap" style="margin-top: 0; border: none; min-height: auto;">
+              <table id="statusSummaryTable" class="summary-table">
+                <thead>
+                  <tr>
+                    <th>Status</th>
+                    <th style="text-align: center;">Qtd.</th>
+                    <th style="text-align: right;">%</th>
+                    <th style="width: 40%;">Distribuição</th>
+                  </tr>
+                </thead>
+                <tbody id="statusSummaryBody">
+                  </tbody>
+              </table>
             </div>
           </div>
-          </div>
+          
+        </div>
 
         <aside>
           <div class="panel">
@@ -153,7 +160,7 @@
               </div>
             </div>
           </div>
-          </aside>
+        </aside>
       </div>
 
       <div id="modalBackdrop" class="modal-backdrop">
@@ -251,8 +258,7 @@
         </div>
       </div>
     </div>
+    
     <script src="script.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
   </body>
 </html>

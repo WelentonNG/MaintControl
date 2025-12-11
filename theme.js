@@ -1,12 +1,6 @@
-// type theme.js
-  
-// Alternar tema claro/escuro com persistência usando localStorage
-
 document.addEventListener('DOMContentLoaded', () => {
-  const toggleTheme = document.getElementById('toggleTheme');
-    
 
-  // Alternar tema
+  const toggleTheme = document.getElementById('toggleTheme');
   if (toggleTheme) {
     toggleTheme.addEventListener('click', () => {
       const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
@@ -19,8 +13,7 @@ document.addEventListener('DOMContentLoaded', () => {
       icon.className = newTheme === 'dark' ? 'fa-solid fa-sun' : 'fa-solid fa-moon';
     });
   }
-
-  // Aplicar tema salvo
+  
   const savedTheme = localStorage.getItem('theme') || 'light';
   document.documentElement.setAttribute('data-theme', savedTheme);
   

@@ -11,7 +11,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Função de Logout
     const logoutSystem = () => {
-        if(confirm) {
+        if(confirm("Deseja realmente sair do sistema?")) {
             localStorage.removeItem('maintControl_session');
             localStorage.removeItem('maintControl_user');
             window.location.href = 'login/login.html';
@@ -281,7 +281,7 @@ document.addEventListener('DOMContentLoaded', () => {
         updateMetrics(); 
         renderPager(pages);
         updateShowingRange(total, start, pagedItems.length);
-        renderChart();
+        renderStatusTable(); // Substitui o antigo renderChart
     };
 
     const getProcessedItems = () => {
@@ -724,38 +724,55 @@ document.addEventListener('DOMContentLoaded', () => {
         ).join('') || '<li>Nenhum histórico registrado.</li>';
     };
 
-    // ======== LÓGICA DO GRÁFICO (CHART.JS) ========
-    let chart = null;
-    const renderChart = () => {
+    // ======== LÓGICA DA TABELA DE RESUMO (SUBSTITUI GRÁFICO) ========
+    const renderStatusTable = () => {
+        const tbody = document.getElementById('statusSummaryBody');
+        if (!tbody) return;
+
+        tbody.innerHTML = '';
+        const total = state.machines.length;
+        
+        // Calcula contagens
         const counts = STATUS.reduce((acc, s) => { acc[s] = 0; return acc; }, {});
         state.machines.forEach(m => { counts[m.status]++; });
 
-        const labels = STATUS;
-        const data = labels.map(l => counts[l]);
-        const backgroundColors = ['#16a34a', '#4f46e5', '#d97706', '#dc2626', '#64748b', '#f97316'];
+        // Mapeamento de cores para as barras (usando as classes CSS criadas)
+        const colorMap = {
+            "OK": 'bar-ok',
+            "EM OPERAÇÃO": 'bar-op',
+            "EM MANUTENÇÃO": 'bar-maint',
+            "INOPERANTE": 'bar-inop',
+            "ESPERANDO PEÇAS": 'bar-wait',
+            "HORAS EXCEDENTES": 'bar-exc'
+        };
 
-        const ctx = document.getElementById('statusChart').getContext('2d');
-        if (chart) {
-            chart.data.labels = labels;
-            chart.data.datasets[0].data = data;
-            chart.options.plugins.legend.labels.color = getComputedStyle(document.body).getPropertyValue('--text');
-            chart.update();
-            return;
-        }
-        chart = new Chart(ctx, {
-            type: 'doughnut',
-            data: { labels, datasets: [{ data, backgroundColor: backgroundColors, borderWidth: 0 }] },
-            options: {
-                responsive: true, maintainAspectRatio: false,
-                plugins: {
-                    legend: { position: 'right', labels: { padding: 15, color: getComputedStyle(document.body).getPropertyValue('--text') } },
-                    tooltip: {
-                        callbacks: {
-                            label: (c) => ` ${c.label}: ${c.raw} (${(state.machines.length > 0 ? (c.raw / state.machines.length) * 100 : 0).toFixed(1)}%)`
-                        }
-                    }
-                }
-            }
+        STATUS.forEach(status => {
+            const count = counts[status];
+            const pct = total > 0 ? ((count / total) * 100).toFixed(1) : 0;
+            const barClass = colorMap[status] || 'bar-ok';
+
+            const tr = document.createElement('tr');
+            tr.className = 'row';
+            // Adiciona evento de filtro ao clicar na linha da tabela de resumo
+            tr.style.cursor = 'pointer';
+            tr.onclick = () => {
+                state.filter = status;
+                DOMElements.filterEl.value = status;
+                state.page = 1;
+                render();
+            };
+
+            tr.innerHTML = `
+                <td><span class="pill ${getStatusClass(status)}" style="font-size: 11px;">${status}</span></td>
+                <td style="text-align: center;"><strong>${count}</strong></td>
+                <td style="text-align: right;" class="small">${pct}%</td>
+                <td style="vertical-align: middle;">
+                    <div class="progress-bg">
+                        <div class="progress-bar ${barClass}" style="width: ${pct}%"></div>
+                    </div>
+                </td>
+            `;
+            tbody.appendChild(tr);
         });
     };
 
@@ -1076,39 +1093,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const applyTheme = () => {
             const theme = localStorage.getItem('theme') || 'light';
             document.documentElement.setAttribute('data-theme', theme);
-            if (chart) {
-                chart.options.plugins.legend.labels.color = getComputedStyle(document.body).getPropertyValue('--text');
-                chart.update();
-            }
         };
         
-        const handleChartResize = () => {
-            setTimeout(() => {
-                if (chart) {
-                    chart.resize();
-                    chart.update(); 
-                }
-            }, 0);
-        }
-        
-        document.getElementById('toggleChartFullscreen').addEventListener('click', function() {
-            const chartPanel = document.getElementById('chartPanel');
-            const toggleChartIcon = this.querySelector('i');
-            const isFullscreen = chartPanel.classList.toggle('fullscreen');
-
-            if (isFullscreen) {
-                toggleChartIcon.classList.replace('fa-expand', 'fa-compress');
-                this.title = 'Sair da Tela Cheia';
-            } else {
-                toggleChartIcon.classList.replace('fa-compress', 'fa-expand');
-                this.title = 'Tela Cheia';
-                window.location.reload();
-                render(); 
-            }
-            chartPanel.removeEventListener('transitionend', handleChartResize);
-            chartPanel.addEventListener('transitionend', handleChartResize, { once: true });
-        });
-
         document.getElementById('exportJson').addEventListener('click', () => {
             const dataStr = JSON.stringify(state.machines, null, 2);
             const blob = new Blob([dataStr], { type: 'application/json' });
@@ -1231,7 +1217,3 @@ document.addEventListener('DOMContentLoaded', () => {
 
     init();
 });
-
-//TODO:Mudar o sistema de grafio para um painel pra ser melhor de visualizar
-//TODO:Adicionar sistema de notificações por email para manutenções agendadas
-//TODO:Fazer menuzinho onde apareca usuario logado
