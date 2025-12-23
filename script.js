@@ -11,12 +11,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Função de Logout
     const logoutSystem = () => {
-        if(confirm("Deseja realmente sair do sistema?")) {
             localStorage.removeItem('maintControl_session');
             localStorage.removeItem('maintControl_user');
             window.location.href = 'login/login.html';
+            console.log("Login efetuado com sucesso")
         }
-    };
 
     // ======== ESTADO E CONSTANTES GLOBAIS ========
     const STATUS = ["OK", "EM OPERAÇÃO", "EM MANUTENÇÃO", "INOPERANTE", "ESPERANDO PEÇAS", "HORAS EXCEDENTES"];

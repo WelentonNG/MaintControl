@@ -1,9 +1,9 @@
 <?php
 
-define('DB_HOST', '127.0.0.1');         // HOST DO BANCO
-define('DB_NAME', 'maintcontrol_db');  // NOME DO BANCO
+define('DB_HOST', '127.0.0.1');       // HOST DO BANCO
+define('DB_NAME', 'maintcontrol_db'); // NOME DO BANCO
 define('DB_USER', 'root');            // USUÁRIO DO BANCO
-define('DB_PASS', '');               // SENHA DO BANCO
+define('DB_PASS', '');                // SENHA DO BANCO
 
 
 try {
